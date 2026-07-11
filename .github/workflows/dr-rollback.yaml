@@ -1,0 +1,161 @@
+name: "DR Rollback — Restore Oracle VM as Active"
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for rollback (Oracle recovered)"
+        required: true
+        type: string
+      dry_run:
+        description: "Dry run — validate only, make no changes"
+        required: false
+        default: "true"
+        type: choice
+        options: ["true", "false"]
+
+permissions:
+  id-token: write
+  contents: write
+
+env:
+  VAULT_ADDR: "https://vault.budd.codes"
+  ORACLE_HOST: "140.245.55.10"
+  TENCENT_HOST: "43.173.6.97"
+  ORACLE_RMQ_URL: "https://prod.rmq.budd.codes"
+  TENCENT_RMQ_URL: "https://dr.rmq.budd.codes"
+  NAMECOM_DOMAIN: "budd.codes"
+  NAMECOM_API_BASE: "https://api.name.com/v4"
+  PROD_DNS_HOST: "prod.rmq"
+  ORACLE_IP: "140.245.55.10"
+  GIT_REPO: "budd9442/rmq"
+  OVERLAY_ACTIVE: "kubernetes/rabbitmq-topology/overlays/active-role"
+  OVERLAY_PASSIVE: "kubernetes/rabbitmq-topology/overlays/passive-role"
+
+jobs:
+  rollback:
+    name: "Rollback: Tencent → Oracle (restore normal)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+
+    - name: "Log rollback metadata"
+      run: |
+        echo "## 🔄 DR Rollback Triggered" >> $GITHUB_STEP_SUMMARY
+        echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+        echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+        echo "| Operator | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Reason | ${{ inputs.reason }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Dry Run | ${{ inputs.dry_run }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Started | $(date -u '+%Y-%m-%dT%H:%M:%SZ') |" >> $GITHUB_STEP_SUMMARY
+
+    - name: "Vault: Authenticate via GitHub OIDC JWT"
+      uses: hashicorp/vault-action@v3
+      with:
+        url: ${{ env.VAULT_ADDR }}
+        method: jwt
+        role: github-dr-promote
+        jwtGithubAudience: "https://github.com/${{ env.GIT_REPO }}"
+        secrets: |
+          secret/data/rabbitmq/oracle    rmq_user      | ORACLE_RMQ_USER ;
+          secret/data/rabbitmq/oracle    rmq_pass      | ORACLE_RMQ_PASS ;
+          secret/data/rabbitmq/tencent   rmq_user      | TENCENT_RMQ_USER ;
+          secret/data/rabbitmq/tencent   rmq_pass      | TENCENT_RMQ_PASS ;
+          secret/data/namecom            username      | NAMECOM_USER ;
+          secret/data/namecom            api_token     | NAMECOM_TOKEN ;
+          secret/data/notifications/slack webhook_url  | SLACK_WEBHOOK_URL
+
+    - name: "Checkout repository"
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: "Preflight: Verify Oracle is healthy before rollback"
+      env:
+        ORACLE_RMQ_USER: ${{ env.ORACLE_RMQ_USER }}
+        ORACLE_RMQ_PASS: ${{ env.ORACLE_RMQ_PASS }}
+      run: |
+        echo "### Preflight: Oracle Health Check" >> $GITHUB_STEP_SUMMARY
+        HTTP=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 \
+          -u "$ORACLE_RMQ_USER:$ORACLE_RMQ_PASS" \
+          "${{ env.ORACLE_RMQ_URL }}/api/overview" 2>/dev/null || echo "000")
+        if [ "$HTTP" != "200" ]; then
+          echo "❌ FATAL: Oracle VM still unhealthy (HTTP $HTTP). Cannot rollback."
+          echo "**❌ Oracle VM not healthy — rollback aborted.**" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+        echo "**✓ Oracle VM is healthy (HTTP 200) — safe to rollback.**" >> $GITHUB_STEP_SUMMARY
+
+    - name: "DNS Restore: prod.rmq.budd.codes → Oracle VM"
+      env:
+        NAMECOM_USER: ${{ env.NAMECOM_USER }}
+        NAMECOM_TOKEN: ${{ env.NAMECOM_TOKEN }}
+      run: |
+        set -euo pipefail
+        echo "### DNS Restore" >> $GITHUB_STEP_SUMMARY
+
+        RECORDS=$(curl -sf \
+          -u "$NAMECOM_USER:$NAMECOM_TOKEN" \
+          "${{ env.NAMECOM_API_BASE }}/domains/${{ env.NAMECOM_DOMAIN }}/records" \
+          -H "Accept: application/json")
+
+        RECORD_ID=$(echo "$RECORDS" | python3 -c "
+        import sys, json
+        records = json.load(sys.stdin).get('records', [])
+        for r in records:
+            if r.get('host') == '${{ env.PROD_DNS_HOST }}' and r.get('type') == 'A':
+                print(r['id']); break
+        ")
+
+        if [ -z "$RECORD_ID" ]; then
+          echo "❌ DNS record not found" >> $GITHUB_STEP_SUMMARY; exit 1
+        fi
+
+        echo "| DNS Record | Restoring to |" >> $GITHUB_STEP_SUMMARY
+        echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+        echo "| ${{ env.PROD_DNS_HOST }}.${{ env.NAMECOM_DOMAIN }} | ${{ env.ORACLE_IP }} (Oracle) |" >> $GITHUB_STEP_SUMMARY
+
+        [ "${{ inputs.dry_run }}" = "true" ] && echo "[DRY RUN] No DNS change." && exit 0
+
+        HTTP=$(curl -s -o /dev/null -w "%{http_code}" -X PUT \
+          -u "$NAMECOM_USER:$NAMECOM_TOKEN" \
+          "${{ env.NAMECOM_API_BASE }}/domains/${{ env.NAMECOM_DOMAIN }}/records/$RECORD_ID" \
+          -H "Content-Type: application/json" \
+          -d "{\"host\":\"${{ env.PROD_DNS_HOST }}\",\"type\":\"A\",\"answer\":\"${{ env.ORACLE_IP }}\",\"ttl\":300}")
+        [ "$HTTP" = "200" ] && echo "**✓ DNS restored to Oracle VM.**" >> $GITHUB_STEP_SUMMARY || exit 1
+
+    - name: "GitOps: Restore Oracle to active-role, Tencent to passive-role"
+      run: |
+        set -euo pipefail
+        PROD_APP="kubernetes/argocd-apps/rabbitmq-topology-prod.yaml"
+        DR_APP="kubernetes/argocd-apps/rabbitmq-topology-dr.yaml"
+
+        [ "${{ inputs.dry_run }}" = "true" ] && \
+          echo "[DRY RUN] Would restore overlay paths." && \
+          echo "**[DRY RUN] GitOps restore validated.**" >> $GITHUB_STEP_SUMMARY && exit 0
+
+        sed -i "s|path: ${{ env.OVERLAY_PASSIVE }}|path: ${{ env.OVERLAY_ACTIVE }}|g" "$PROD_APP"
+        sed -i "s|path: ${{ env.OVERLAY_ACTIVE }}|path: ${{ env.OVERLAY_PASSIVE }}|g" "$DR_APP"
+
+        git config user.name "DR Promotion Bot"
+        git config user.email "dr-bot@budd.codes"
+        git add "$PROD_APP" "$DR_APP"
+        git commit -m "chore(dr): rollback — restore oracle-vm to ACTIVE — run/${{ github.run_id }}
+
+Reason: ${{ inputs.reason }}
+Operator: @${{ github.actor }}"
+        git push origin main
+
+        echo "**✓ GitOps rollback committed. Oracle VM restoring to ACTIVE.**" >> $GITHUB_STEP_SUMMARY
+
+    - name: "Notify Slack"
+      if: always()
+      env:
+        SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
+      run: |
+        STATUS="${{ inputs.dry_run == 'true' && 'DRY RUN' || 'ROLLBACK COMPLETE' }}"
+        curl -sf -X POST -H "Content-Type: application/json" \
+          -d "{\"text\":\"🔄 RabbitMQ DR *$STATUS* — Oracle VM restored as active. Operator: @${{ github.actor }}. Reason: ${{ inputs.reason }}\"}" \
+          "$SLACK_WEBHOOK_URL" || true

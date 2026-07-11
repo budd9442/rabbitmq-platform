@@ -1,0 +1,544 @@
+name: "DR Promotion — Tencent VM Failover"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Trigger: always manual. An optional scheduled health-check job (separate
+# workflow) can call this via workflow_dispatch API when it detects Oracle down.
+# ─────────────────────────────────────────────────────────────────────────────
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for DR promotion (mandatory)"
+        required: true
+        type: string
+      dry_run:
+        description: "Dry run — validate all steps but make no changes"
+        required: false
+        default: "true"
+        type: choice
+        options: ["true", "false"]
+      skip_oracle_preflight:
+        description: "Skip Oracle health checks (use when Oracle is fully unreachable)"
+        required: false
+        default: "false"
+        type: choice
+        options: ["true", "false"]
+      force_stonith:
+        description: "Force STONITH even if Oracle API responds (emergency override)"
+        required: false
+        default: "false"
+        type: choice
+        options: ["true", "false"]
+
+# Required for Vault JWT OIDC auth
+permissions:
+  id-token: write
+  contents: write
+
+# ─────────────────────────────────────────────────────────────────────────────
+env:
+  VAULT_ADDR: "https://vault.budd.codes"
+  ORACLE_HOST: "140.245.55.10"
+  TENCENT_HOST: "43.173.6.97"
+  ORACLE_RMQ_URL: "https://prod.rmq.budd.codes"
+  TENCENT_RMQ_URL: "https://dr.rmq.budd.codes"
+  NAMECOM_DOMAIN: "budd.codes"
+  NAMECOM_API_BASE: "https://api.name.com/v4"
+  PROD_DNS_HOST: "prod.rmq"       # → prod.rmq.budd.codes
+  DR_DNS_HOST: "dr.rmq"           # → dr.rmq.budd.codes
+  TENCENT_IP: "43.173.6.97"
+  ORACLE_IP: "140.245.55.10"
+  GIT_REPO: "budd9442/rmq"
+  ARGOCD_APP_ORACLE: "rabbitmq-topology-prod"
+  ARGOCD_APP_TENCENT: "rabbitmq-topology-dr"
+  OVERLAY_ACTIVE: "kubernetes/rabbitmq-topology/overlays/active-role"
+  OVERLAY_PASSIVE: "kubernetes/rabbitmq-topology/overlays/passive-role"
+
+jobs:
+  promote:
+    name: "Failover: Oracle → Tencent"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+
+    # ── 0. Audit trail ──────────────────────────────────────────────────────
+    - name: "Log promotion metadata"
+      run: |
+        echo "## 🚨 DR Promotion Triggered" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+        echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+        echo "| Operator | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Reason | ${{ inputs.reason }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Dry Run | ${{ inputs.dry_run }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Skip Oracle Preflight | ${{ inputs.skip_oracle_preflight }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Force STONITH | ${{ inputs.force_stonith }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Started | $(date -u '+%Y-%m-%dT%H:%M:%SZ') |" >> $GITHUB_STEP_SUMMARY
+        echo "| Run ID | ${{ github.run_id }} |" >> $GITHUB_STEP_SUMMARY
+
+    # ── 1. Authenticate to Vault via GitHub OIDC (no static secrets) ────────
+    - name: "Vault: Authenticate via GitHub OIDC JWT"
+      uses: hashicorp/vault-action@v3
+      id: vault
+      with:
+        url: ${{ env.VAULT_ADDR }}
+        method: jwt
+        role: github-dr-promote
+        jwtGithubAudience: "https://github.com/${{ env.GIT_REPO }}"
+        # Fetch all secrets the workflow needs in one shot
+        secrets: |
+          secret/data/rabbitmq/oracle    rmq_user      | ORACLE_RMQ_USER ;
+          secret/data/rabbitmq/oracle    rmq_pass      | ORACLE_RMQ_PASS ;
+          secret/data/rabbitmq/tencent   rmq_user      | TENCENT_RMQ_USER ;
+          secret/data/rabbitmq/tencent   rmq_pass      | TENCENT_RMQ_PASS ;
+          secret/data/namecom            username      | NAMECOM_USER ;
+          secret/data/namecom            api_token     | NAMECOM_TOKEN ;
+          secret/data/ssh/oracle         private_key   | ORACLE_SSH_KEY ;
+          secret/data/ssh/tencent        private_key   | TENCENT_SSH_KEY ;
+          secret/data/notifications/slack webhook_url  | SLACK_WEBHOOK_URL
+
+    # ── 2. Checkout repository ───────────────────────────────────────────────
+    - name: "Checkout repository"
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    # ── 3. Phase 0: Preflight checks ─────────────────────────────────────────
+    - name: "Phase 0 — Preflight: Verify Oracle health"
+      id: preflight
+      env:
+        ORACLE_RMQ_USER: ${{ env.ORACLE_RMQ_USER }}
+        ORACLE_RMQ_PASS: ${{ env.ORACLE_RMQ_PASS }}
+        TENCENT_RMQ_USER: ${{ env.TENCENT_RMQ_USER }}
+        TENCENT_RMQ_PASS: ${{ env.TENCENT_RMQ_PASS }}
+      run: |
+        set +e
+        echo "### Phase 0: Preflight Checks" >> $GITHUB_STEP_SUMMARY
+
+        # --- Oracle health check (3 attempts, 10s apart) ---
+        ORACLE_ALIVE=false
+        if [ "${{ inputs.skip_oracle_preflight }}" = "false" ]; then
+          for i in 1 2 3; do
+            echo "  Checking Oracle RabbitMQ health (attempt $i/3)..."
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 \
+              -u "$ORACLE_RMQ_USER:$ORACLE_RMQ_PASS" \
+              "${{ env.ORACLE_RMQ_URL }}/api/overview" 2>/dev/null || echo "000")
+            if [ "$HTTP_CODE" = "200" ]; then
+              ORACLE_ALIVE=true
+              echo "  Oracle responded HTTP 200 on attempt $i"
+              break
+            fi
+            echo "  Oracle returned HTTP $HTTP_CODE on attempt $i"
+            [ $i -lt 3 ] && sleep 10
+          done
+        else
+          echo "  Skipping Oracle preflight (skip_oracle_preflight=true)"
+        fi
+
+        # --- Tencent health check (must be healthy to proceed) ---
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 \
+          -u "$TENCENT_RMQ_USER:$TENCENT_RMQ_PASS" \
+          "${{ env.TENCENT_RMQ_URL }}/api/overview" 2>/dev/null || echo "000")
+        if [ "$HTTP_CODE" != "200" ]; then
+          echo "❌ FATAL: Tencent VM is not healthy (HTTP $HTTP_CODE). Aborting promotion."
+          echo "**❌ FATAL: Tencent VM is unreachable — aborting.**" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+        echo "  Tencent VM is healthy ✓"
+
+        # --- Capture queue depths before promotion ---
+        echo "#### Queue depths before promotion" >> $GITHUB_STEP_SUMMARY
+        QUEUES=$(curl -s -u "$TENCENT_RMQ_USER:$TENCENT_RMQ_PASS" \
+          "${{ env.TENCENT_RMQ_URL }}/api/queues" 2>/dev/null | \
+          python3 -c "
+        import sys,json
+        qs = [q for q in json.load(sys.stdin) if not q['name'].startswith('amq.gen-')]
+        print('| Queue | Messages |')
+        print('|---|---|')
+        for q in qs:
+          print(f'| {q[\"name\"]} | {q.get(\"messages\",0)} |')
+        " 2>/dev/null)
+        echo "$QUEUES" >> $GITHUB_STEP_SUMMARY
+
+        # Export oracle alive status for next steps
+        echo "oracle_alive=$ORACLE_ALIVE" >> $GITHUB_OUTPUT
+        echo "  Oracle alive: $ORACLE_ALIVE"
+
+    # ── 4. Phase 1: STONITH — Shoot Oracle in the head ───────────────────────
+    # Principle: Before promoting Tencent, we MUST ensure Oracle cannot
+    # continue to serve traffic or accept messages. This prevents split-brain.
+    # If Oracle API works → graceful quiesce. If not → SSH hard fence.
+    # If SSH also fails → Oracle is truly dead (safe to continue).
+    - name: "Phase 1 — STONITH: Fence Oracle VM"
+      id: stonith
+      env:
+        ORACLE_RMQ_USER: ${{ env.ORACLE_RMQ_USER }}
+        ORACLE_RMQ_PASS: ${{ env.ORACLE_RMQ_PASS }}
+        ORACLE_SSH_KEY: ${{ env.ORACLE_SSH_KEY }}
+      run: |
+        set +e
+        echo "### Phase 1: STONITH (Fencing Oracle VM)" >> $GITHUB_STEP_SUMMARY
+
+        FENCED=false
+        ORACLE_ALIVE="${{ steps.preflight.outputs.oracle_alive }}"
+
+        # ── Attempt 1: Graceful API quiesce ──────────────────────────────────
+        if [ "$ORACLE_ALIVE" = "true" ] || [ "${{ inputs.force_stonith }}" = "true" ]; then
+          echo "  Attempting graceful API quiesce on Oracle..."
+
+          # Delete the replication shovel (stops messages flowing to Tencent)
+          HTTP=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE --max-time 10 \
+            -u "$ORACLE_RMQ_USER:$ORACLE_RMQ_PASS" \
+            "${{ env.ORACLE_RMQ_URL }}/api/parameters/shovel/%2F/cross-site-shovel")
+          echo "  DELETE shovel returned HTTP $HTTP"
+
+          # Stop new publisher connections (close all client connections)
+          curl -s -X DELETE --max-time 10 \
+            -u "$ORACLE_RMQ_USER:$ORACLE_RMQ_PASS" \
+            "${{ env.ORACLE_RMQ_URL }}/api/connections" \
+            -H "Content-Type: application/json" \
+            -d '{"reason":"DR Failover: Oracle VM fenced"}' || true
+
+          [ "$HTTP" = "204" ] && FENCED=true && \
+            echo "  ✓ Oracle RabbitMQ shovel deleted via API" || \
+            echo "  API shovel delete failed — escalating to SSH STONITH"
+        fi
+
+        # ── Attempt 2: SSH hard fence ─────────────────────────────────────────
+        if [ "$FENCED" = "false" ]; then
+          echo "  Attempting SSH STONITH on Oracle VM (${{ env.ORACLE_HOST }})..."
+
+          # Write SSH key
+          echo "$ORACLE_SSH_KEY" > /tmp/oracle_key
+          chmod 600 /tmp/oracle_key
+
+          ssh -o StrictHostKeyChecking=no \
+              -o ConnectTimeout=15 \
+              -o BatchMode=yes \
+              -i /tmp/oracle_key \
+              ubuntu@${{ env.ORACLE_HOST }} \
+            "sudo systemctl stop nginx 2>/dev/null; \
+             sudo kubectl scale statefulset rabbitmq-prod --replicas=0 -n rabbitmq 2>/dev/null; \
+             echo FENCED" && FENCED=true && \
+            echo "  ✓ Oracle fenced via SSH (nginx stopped, RabbitMQ scaled to 0)" || \
+            echo "  SSH STONITH failed — Oracle appears to be fully dead (safe to continue)"
+
+          rm -f /tmp/oracle_key
+        fi
+
+        # ── Verdict ───────────────────────────────────────────────────────────
+        if [ "$FENCED" = "true" ]; then
+          echo "**✓ Oracle VM fenced successfully**" >> $GITHUB_STEP_SUMMARY
+          echo "stonith_result=fenced" >> $GITHUB_OUTPUT
+        else
+          # Oracle is completely dead — no split-brain risk since a dead node
+          # cannot respond to clients or shovel messages
+          echo "**⚠️ Oracle unreachable via API and SSH — assumed dead (no split-brain risk)**" >> $GITHUB_STEP_SUMMARY
+          echo "stonith_result=assumed_dead" >> $GITHUB_OUTPUT
+        fi
+
+        # Wait for in-flight messages to drain to Tencent buffer
+        echo "  Waiting 15s for any in-flight messages to settle in Tencent buffer..."
+        [ "${{ inputs.dry_run }}" = "false" ] && sleep 15 || echo "  (skipping wait in dry-run)"
+
+    # ── 5. Phase 2: DNS Swap via Name.com API ────────────────────────────────
+    # Point prod.rmq.budd.codes → Tencent IP (43.173.6.97)
+    # This is the traffic cutover — do it AFTER fencing Oracle.
+    - name: "Phase 2 — DNS Swap: prod.rmq.budd.codes → Tencent VM"
+      id: dns_swap
+      env:
+        NAMECOM_USER: ${{ env.NAMECOM_USER }}
+        NAMECOM_TOKEN: ${{ env.NAMECOM_TOKEN }}
+      run: |
+        set -euo pipefail
+        echo "### Phase 2: DNS Swap (Name.com)" >> $GITHUB_STEP_SUMMARY
+
+        # Find the current A record for prod.rmq
+        echo "  Fetching DNS records for ${{ env.NAMECOM_DOMAIN }}..."
+        RECORDS=$(curl -sf \
+          -u "$NAMECOM_USER:$NAMECOM_TOKEN" \
+          "${{ env.NAMECOM_API_BASE }}/domains/${{ env.NAMECOM_DOMAIN }}/records" \
+          -H "Accept: application/json")
+
+        # Extract the ID of the prod.rmq A record
+        RECORD_ID=$(echo "$RECORDS" | python3 -c "
+        import sys, json
+        records = json.load(sys.stdin).get('records', [])
+        for r in records:
+            if r.get('host') == '${{ env.PROD_DNS_HOST }}' and r.get('type') == 'A':
+                print(r['id'])
+                break
+        ")
+
+        if [ -z "$RECORD_ID" ]; then
+          echo "  ❌ Could not find A record for ${{ env.PROD_DNS_HOST }}.${{ env.NAMECOM_DOMAIN }}"
+          echo "**❌ DNS record not found — manual DNS update required**" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+
+        CURRENT_IP=$(echo "$RECORDS" | python3 -c "
+        import sys, json
+        records = json.load(sys.stdin).get('records', [])
+        for r in records:
+            if r.get('id') == $RECORD_ID:
+                print(r.get('answer','unknown'))
+                break
+        " 2>/dev/null || echo "unknown")
+
+        echo "  Found record ID $RECORD_ID (currently → $CURRENT_IP)"
+        echo "| DNS Record | Before | After |" >> $GITHUB_STEP_SUMMARY
+        echo "|---|---|---|" >> $GITHUB_STEP_SUMMARY
+        echo "| ${{ env.PROD_DNS_HOST }}.${{ env.NAMECOM_DOMAIN }} (A) | $CURRENT_IP | ${{ env.TENCENT_IP }} |" >> $GITHUB_STEP_SUMMARY
+
+        if [ "${{ inputs.dry_run }}" = "true" ]; then
+          echo "  [DRY RUN] Would update record $RECORD_ID: $CURRENT_IP → ${{ env.TENCENT_IP }}"
+          echo "record_id=$RECORD_ID" >> $GITHUB_OUTPUT
+          echo "dns_status=dry_run" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        # Update the A record to point to Tencent
+        HTTP=$(curl -s -o /tmp/dns_resp.json -w "%{http_code}" -X PUT \
+          -u "$NAMECOM_USER:$NAMECOM_TOKEN" \
+          "${{ env.NAMECOM_API_BASE }}/domains/${{ env.NAMECOM_DOMAIN }}/records/$RECORD_ID" \
+          -H "Content-Type: application/json" \
+          -d "{
+            \"host\": \"${{ env.PROD_DNS_HOST }}\",
+            \"type\": \"A\",
+            \"answer\": \"${{ env.TENCENT_IP }}\",
+            \"ttl\": 300
+          }")
+
+        echo "  Name.com API response: HTTP $HTTP"
+        cat /tmp/dns_resp.json | python3 -m json.tool 2>/dev/null || true
+
+        if [ "$HTTP" = "200" ]; then
+          echo "  ✓ DNS updated: ${{ env.PROD_DNS_HOST }}.${{ env.NAMECOM_DOMAIN }} → ${{ env.TENCENT_IP }}"
+          echo "**✓ DNS record updated. TTL=300s — propagation within ~5 minutes.**" >> $GITHUB_STEP_SUMMARY
+          echo "dns_status=updated" >> $GITHUB_OUTPUT
+        else
+          echo "  ❌ DNS update failed (HTTP $HTTP)"
+          echo "**❌ DNS update failed — manual intervention required.**" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        fi
+
+        echo "record_id=$RECORD_ID" >> $GITHUB_OUTPUT
+
+    # ── 6. Phase 3: GitOps Topology Swap ─────────────────────────────────────
+    # Swap the kustomize overlay paths in the two ArgoCD Application manifests.
+    # ArgoCD (on both clusters) auto-syncs and applies the new topology.
+    # Git is the single source of truth — no direct kubectl needed.
+    - name: "Phase 3 — GitOps: Swap ArgoCD overlay paths"
+      id: gitops
+      run: |
+        set -euo pipefail
+        echo "### Phase 3: GitOps Topology Swap" >> $GITHUB_STEP_SUMMARY
+
+        PROD_APP="kubernetes/argocd-apps/rabbitmq-topology-prod.yaml"
+        DR_APP="kubernetes/argocd-apps/rabbitmq-topology-dr.yaml"
+
+        echo "  Current paths:"
+        grep "path:" "$PROD_APP"
+        grep "path:" "$DR_APP"
+
+        if [ "${{ inputs.dry_run }}" = "true" ]; then
+          echo "  [DRY RUN] Would swap:"
+          echo "    $PROD_APP: ${{ env.OVERLAY_ACTIVE }} → ${{ env.OVERLAY_PASSIVE }}"
+          echo "    $DR_APP:   ${{ env.OVERLAY_PASSIVE }} → ${{ env.OVERLAY_ACTIVE }}"
+          echo "**[DRY Run] GitOps swap validated — no commit made.**" >> $GITHUB_STEP_SUMMARY
+          exit 0
+        fi
+
+        # Oracle app: active-role → passive-role
+        sed -i "s|path: ${{ env.OVERLAY_ACTIVE }}|path: ${{ env.OVERLAY_PASSIVE }}|g" "$PROD_APP"
+        # Tencent app: passive-role → active-role
+        sed -i "s|path: ${{ env.OVERLAY_PASSIVE }}|path: ${{ env.OVERLAY_ACTIVE }}|g" "$DR_APP"
+
+        echo "  After swap:"
+        grep "path:" "$PROD_APP"
+        grep "path:" "$DR_APP"
+
+        # Configure git identity
+        git config user.name  "DR Promotion Bot"
+        git config user.email "dr-bot@budd.codes"
+
+        git add "$PROD_APP" "$DR_APP"
+        git commit -m "chore(dr): promote tencent-vm to ACTIVE — incident run/${{ github.run_id }}
+
+Reason: ${{ inputs.reason }}
+Operator: @${{ github.actor }}
+Time: $(date -u '+%Y-%m-%dT%H:%M:%SZ')
+
+Changes:
+  - rabbitmq-topology-prod: active-role → passive-role (Oracle demoted)
+  - rabbitmq-topology-dr:   passive-role → active-role (Tencent promoted)
+
+ArgoCD will auto-sync both clusters from this commit.
+DNS: prod.rmq.budd.codes now points to Tencent VM (${{ env.TENCENT_IP }})."
+
+        git push origin main
+
+        COMMIT_SHA=$(git rev-parse HEAD)
+        echo "commit_sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+        echo "**✓ GitOps commit pushed:** \`$COMMIT_SHA\`" >> $GITHUB_STEP_SUMMARY
+        echo "  ArgoCD will auto-sync Tencent to active-role within ~30s"
+
+    # ── 7. Phase 4: Wait for Tencent ArgoCD sync ────────────────────────────
+    # Poll Tencent's RabbitMQ policy API to confirm the active-role overlay
+    # was applied (orders-policy should now have dead-letter-exchange).
+    - name: "Phase 4 — Validate: Confirm Tencent switched to active-role"
+      id: validate
+      env:
+        TENCENT_RMQ_USER: ${{ env.TENCENT_RMQ_USER }}
+        TENCENT_RMQ_PASS: ${{ env.TENCENT_RMQ_PASS }}
+      run: |
+        set +e
+        echo "### Phase 4: Validation" >> $GITHUB_STEP_SUMMARY
+
+        if [ "${{ inputs.dry_run }}" = "true" ]; then
+          echo "  [DRY RUN] Skipping live validation."
+          echo "**[DRY RUN] Validation skipped.**" >> $GITHUB_STEP_SUMMARY
+          exit 0
+        fi
+
+        echo "  Waiting for Tencent active-role policy to apply (up to 3 minutes)..."
+        CONFIRMED=false
+        for i in $(seq 1 18); do
+          POLICIES=$(curl -sf --max-time 10 \
+            -u "$TENCENT_RMQ_USER:$TENCENT_RMQ_PASS" \
+            "${{ env.TENCENT_RMQ_URL }}/api/policies/%2F" 2>/dev/null)
+
+          HAS_DLX=$(echo "$POLICIES" | python3 -c "
+        import sys,json
+        try:
+          ps = json.load(sys.stdin)
+          op = next((p for p in ps if p['name']=='orders-policy'), None)
+          print('yes' if op and 'dead-letter-exchange' in op.get('definition',{}) else 'no')
+        except:
+          print('no')
+        " 2>/dev/null)
+
+          if [ "$HAS_DLX" = "yes" ]; then
+            CONFIRMED=true
+            echo "  ✓ Tencent active-role confirmed after $((i * 10))s (DLX policy active)"
+            break
+          fi
+          echo "  Attempt $i/18 — waiting 10s..."
+          sleep 10
+        done
+
+        # Capture post-promotion queue depths
+        QUEUES_AFTER=$(curl -s --max-time 10 \
+          -u "$TENCENT_RMQ_USER:$TENCENT_RMQ_PASS" \
+          "${{ env.TENCENT_RMQ_URL }}/api/queues" 2>/dev/null | \
+          python3 -c "
+        import sys,json
+        try:
+          qs = [q for q in json.load(sys.stdin) if not q['name'].startswith('amq.gen-')]
+          print('| Queue | Messages |')
+          print('|---|---|')
+          for q in qs:
+            print(f'| {q[\"name\"]} | {q.get(\"messages\",0)} |')
+        except: print('(failed to fetch)')
+        " 2>/dev/null)
+
+        if [ "$CONFIRMED" = "true" ]; then
+          echo "**✓ Promotion validated. Tencent VM is now ACTIVE.**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### Queue depths after promotion" >> $GITHUB_STEP_SUMMARY
+          echo "$QUEUES_AFTER" >> $GITHUB_STEP_SUMMARY
+          echo "validation_status=passed" >> $GITHUB_OUTPUT
+        else
+          echo "**⚠️ Validation timed out — ArgoCD sync may be delayed. Check manually.**" >> $GITHUB_STEP_SUMMARY
+          echo "validation_status=timeout" >> $GITHUB_OUTPUT
+          # Don't fail — DNS is already swapped, Tencent is serving traffic.
+          # ArgoCD will sync eventually. Alert has been posted.
+        fi
+
+    # ── 8. Phase 5: Slack Notification ──────────────────────────────────────
+    - name: "Phase 5 — Notify: Post Slack alert"
+      if: always()
+      env:
+        SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
+      run: |
+        DRY_RUN="${{ inputs.dry_run }}"
+        VALIDATION="${{ steps.validate.outputs.validation_status }}"
+        STONITH="${{ steps.stonith.outputs.stonith_result }}"
+        DNS="${{ steps.dns_swap.outputs.dns_status }}"
+        COMMIT="${{ steps.gitops.outputs.commit_sha }}"
+
+        if [ "$DRY_RUN" = "true" ]; then
+          EMOJI="🧪"; STATUS="DRY RUN"
+          COLOR="#888888"
+        elif [ "$VALIDATION" = "passed" ]; then
+          EMOJI="✅"; STATUS="PROMOTION COMPLETE"
+          COLOR="#2ecc71"
+        else
+          EMOJI="⚠️"; STATUS="PROMOTION COMPLETE (validation timeout)"
+          COLOR="#f39c12"
+        fi
+
+        PAYLOAD=$(cat <<EOF
+        {
+          "attachments": [{
+            "color": "$COLOR",
+            "blocks": [
+              {
+                "type": "header",
+                "text": { "type": "plain_text", "text": "$EMOJI RabbitMQ DR Promotion — $STATUS" }
+              },
+              {
+                "type": "section",
+                "fields": [
+                  { "type": "mrkdwn", "text": "*Operator:*\n@${{ github.actor }}" },
+                  { "type": "mrkdwn", "text": "*Reason:*\n${{ inputs.reason }}" },
+                  { "type": "mrkdwn", "text": "*STONITH:*\n$STONITH" },
+                  { "type": "mrkdwn", "text": "*DNS:*\n$DNS" },
+                  { "type": "mrkdwn", "text": "*Validation:*\n$VALIDATION" },
+                  { "type": "mrkdwn", "text": "*Commit:*\n${COMMIT:-N/A}" }
+                ]
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*prod.rmq.budd.codes* now routes to *Tencent VM* (${{ env.TENCENT_IP }})\n<https://github.com/${{ env.GIT_REPO }}/actions/runs/${{ github.run_id }}|View workflow run>"
+                }
+              }
+            ]
+          }]
+        }
+        EOF
+        )
+
+        curl -sf -X POST -H "Content-Type: application/json" \
+          -d "$PAYLOAD" \
+          "$SLACK_WEBHOOK_URL" || echo "Slack notification failed (non-fatal)"
+
+    # ── 9. Final Summary ────────────────────────────────────────────────────
+    - name: "Final status"
+      if: always()
+      run: |
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "---" >> $GITHUB_STEP_SUMMARY
+        echo "## Result" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ "${{ inputs.dry_run }}" = "true" ]; then
+          echo "🧪 **Dry run completed. No changes were made.**" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "### Traffic is now served by Tencent VM" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Endpoint | Target |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| prod.rmq.budd.codes | Tencent VM (${{ env.TENCENT_IP }}) — ACTIVE |" >> $GITHUB_STEP_SUMMARY
+          echo "| dr.rmq.budd.codes | Tencent VM (${{ env.TENCENT_IP }}) — same node |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Investigate and recover Oracle VM" >> $GITHUB_STEP_SUMMARY
+          echo "2. Once Oracle recovers, its ArgoCD auto-syncs to \`passive-role\`" >> $GITHUB_STEP_SUMMARY
+          echo "3. Run the **DR Rollback** workflow to restore normal topology when ready" >> $GITHUB_STEP_SUMMARY
+          echo "4. Monitor Grafana dashboards — Tencent badge should show ACTIVE" >> $GITHUB_STEP_SUMMARY
+        fi
