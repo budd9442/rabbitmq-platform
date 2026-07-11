@@ -1,6 +1,5 @@
 data "tencentcloud_images" "ubuntu" {
   image_type       = ["PUBLIC_IMAGE"]
-  os_name          = "ubuntu"
   image_name_regex = "Ubuntu Server 24.04"
 }
 
@@ -71,7 +70,7 @@ resource "tencentcloud_security_group_rule" "egress_all" {
 }
 
 resource "tencentcloud_key_pair" "key" {
-  key_name   = "rmq-dr-key"
+  key_name   = "rmq_dr_key"
   public_key = var.ssh_public_key
 }
 
