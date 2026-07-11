@@ -1,2 +1,5 @@
 .ssh
 .env
+.terraform/
+*.tfstate
+*.tfstate.backup
