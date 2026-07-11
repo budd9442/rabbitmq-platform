@@ -28,6 +28,7 @@ spec:
           sidecar:
             dashboards:
               folderAnnotation: grafana_dashboard_folder
+              defaultFolderName: "System Monitoring"
               provider:
                 foldersFromFilesStructure: true
           grafana.ini:
