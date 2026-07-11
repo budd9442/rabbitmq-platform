@@ -8,5 +8,9 @@ data:
     dr.local:53 {
         errors
         cache 30
+        rewrite stop {
+            name regex (.*)\.dr\.local {1}.cluster.local
+            answer name (.*)\.cluster\.local {1}.dr.local
+        }
         forward . 10.97.0.10
     }

@@ -1,0 +1,59 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: rabbitmq-security-policy
+  namespace: rabbitmq
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: rabbitmq
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow AMQP, Management, and Metrics ports from authorized sources
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: default
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: vpn
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 5671
+    - protocol: TCP
+      port: 5672
+    - protocol: TCP
+      port: 15671
+    - protocol: TCP
+      port: 15672
+    - protocol: TCP
+      port: 15692
+    - protocol: TCP
+      port: 4369
+    - protocol: TCP
+      port: 25672
+  egress:
+  # Allow DNS resolution
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  # Allow egress to VPN tunnel
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: vpn
+  # Allow egress within the cluster
+  - to:
+    - podSelector: {}

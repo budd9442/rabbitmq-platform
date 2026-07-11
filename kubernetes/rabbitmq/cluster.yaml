@@ -19,6 +19,9 @@ spec:
     additionalConfig: |
       # Enforce all queues to default to Quorum Queues
       default_queue_type = quorum
+    additionalPlugins:
+      - rabbitmq_shovel
+      - rabbitmq_shovel_management
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget

@@ -1,0 +1,11 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: replicated-queue
+  namespace: rabbitmq
+spec:
+  name: replicated-queue
+  type: quorum
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-prod

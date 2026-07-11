@@ -1,0 +1,26 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: replicated-queue
+  namespace: rabbitmq
+spec:
+  name: replicated-queue
+  type: quorum
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Shovel
+metadata:
+  name: cross-site-shovel
+  namespace: rabbitmq
+spec:
+  name: cross-site-shovel
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
+  vhost: "/"
+  srcQueue: "replicated-queue"
+  destQueue: "replicated-queue"
+  uriSecret:
+    name: shovel-secrets
