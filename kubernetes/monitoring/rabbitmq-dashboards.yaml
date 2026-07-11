@@ -74,18 +74,13 @@ data:
     \ Volumes\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"\
     h\": 8,\n        \"w\": 12,\n        \"x\": 0,\n        \"y\": 4\n      },\n \
     \     \"targets\": [\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\
-    \"rabbitmq-prod\\\",queue=\\\"replicated-queue\\\"})\",\n          \"legendFormat\"\
-    : \"replicated-queue\",\n          \"refId\": \"A\"\n        },\n        {\n \
-    \         \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\"rabbitmq-prod\\\
-    \",queue=\\\"orders-queue\\\"})\",\n          \"legendFormat\": \"orders-queue\"\
-    ,\n          \"refId\": \"B\"\n        },\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\
-    \"rabbitmq-prod\\\",queue=\\\"orders-dlq\\\"})\",\n          \"legendFormat\"\
-    : \"orders-dlq\",\n          \"refId\": \"C\"\n        }\n      ],\n      \"datasource\"\
-    : {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n    \
-    \  }\n    },\n    {\n      \"id\": 6,\n      \"title\": \"Messaging Throughput\
-    \ (msg/sec)\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n      \
-    \  \"h\": 8,\n        \"w\": 12,\n        \"x\": 12,\n        \"y\": 4\n     \
-    \ },\n      \"targets\": [\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_received_total{job=\\\
+    \"rabbitmq-prod\\\"}) by (queue)\",\n          \"legendFormat\": \"{{queue}}\"\
+    ,\n          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n\
+    \        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n\
+    \    },\n    {\n      \"id\": 6,\n      \"title\": \"Messaging Throughput (msg/sec)\"\
+    ,\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"h\": 8,\n\
+    \        \"w\": 12,\n        \"x\": 12,\n        \"y\": 4\n      },\n      \"\
+    targets\": [\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_received_total{job=\\\
     \"rabbitmq-prod\\\"}[1m]))\",\n          \"legendFormat\": \"Publish Rate\",\n\
     \          \"refId\": \"A\"\n        },\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_acknowledged_total{job=\\\
     \"rabbitmq-prod\\\"}[1m]))\",\n          \"legendFormat\": \"Ack Rate\",\n   \
@@ -193,18 +188,13 @@ data:
     Queue Message Volumes\",\n      \"type\": \"timeseries\",\n      \"gridPos\":\
     \ {\n        \"h\": 8,\n        \"w\": 12,\n        \"x\": 0,\n        \"y\":\
     \ 4\n      },\n      \"targets\": [\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\
-    \"rabbitmq-dr-metrics\\\",queue=\\\"replicated-queue\\\"})\",\n          \"legendFormat\"\
-    : \"replicated-queue\",\n          \"refId\": \"A\"\n        },\n        {\n \
-    \         \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\"rabbitmq-dr-metrics\\\
-    \",queue=\\\"orders-queue\\\"})\",\n          \"legendFormat\": \"orders-queue\"\
-    ,\n          \"refId\": \"B\"\n        },\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\
-    \"rabbitmq-dr-metrics\\\",queue=\\\"orders-dlq\\\"})\",\n          \"legendFormat\"\
-    : \"orders-dlq\",\n          \"refId\": \"C\"\n        }\n      ],\n      \"datasource\"\
-    : {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n    \
-    \  }\n    },\n    {\n      \"id\": 5,\n      \"title\": \"Messaging Throughput\
-    \ (msg/sec)\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n      \
-    \  \"h\": 8,\n        \"w\": 12,\n        \"x\": 12,\n        \"y\": 4\n     \
-    \ },\n      \"targets\": [\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_received_total{job=\\\
+    \"rabbitmq-dr-metrics\\\"}) by (queue)\",\n          \"legendFormat\": \"{{queue}}\"\
+    ,\n          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n\
+    \        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n\
+    \    },\n    {\n      \"id\": 5,\n      \"title\": \"Messaging Throughput (msg/sec)\"\
+    ,\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"h\": 8,\n\
+    \        \"w\": 12,\n        \"x\": 12,\n        \"y\": 4\n      },\n      \"\
+    targets\": [\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_received_total{job=\\\
     \"rabbitmq-dr-metrics\\\"}[1m]))\",\n          \"legendFormat\": \"Publish Rate\"\
     ,\n          \"refId\": \"A\"\n        },\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_acknowledged_total{job=\\\
     \"rabbitmq-dr-metrics\\\"}[1m]))\",\n          \"legendFormat\": \"Ack Rate\"\
