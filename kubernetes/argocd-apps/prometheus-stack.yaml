@@ -28,7 +28,7 @@ spec:
           sidecar:
             dashboards:
               folderAnnotation: grafana_dashboard_folder
-              env:
+              extraEnv:
                 - name: FOLDER
                   value: /tmp/dashboards/System Monitoring
               provider:
