@@ -80,15 +80,18 @@ resource "tencentcloud_instance" "k3s_node" {
   availability_zone          = var.availability_zone
   image_id                   = data.tencentcloud_images.ubuntu.images.0.image_id
   instance_type              = var.instance_type
-  system_disk_type           = "CLOUD_SSD"
+  system_disk_type           = "CLOUD_PREMIUM"
   system_disk_size           = 50
   key_name                   = tencentcloud_key_pair.key.key_name
+  
+  instance_charge_type       = "POSTPAID_BY_HOUR" # Hourly Pay-As-You-Go billing
   
   vpc_id                     = tencentcloud_vpc.vpc.id
   subnet_id                  = tencentcloud_subnet.subnet.id
   
   allocate_public_ip         = true
   internet_max_bandwidth_out = 100
+  internet_charge_type       = "TRAFFIC_POSTPAID_BY_HOUR" # Pay-by-traffic to keep idle costs minimal
   
   security_groups            = [tencentcloud_security_group.sg.id]
   

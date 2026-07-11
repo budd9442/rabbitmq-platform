@@ -14,19 +14,19 @@ variable "tencentcloud_secret_key" {
 variable "region" {
   type        = string
   description = "Tencent Cloud Region"
-  default     = "ap-singapore"
+  default     = "ap-jakarta"
 }
 
 variable "availability_zone" {
   type        = string
   description = "Tencent Cloud Availability Zone"
-  default     = "ap-singapore-1"
+  default     = "ap-jakarta-1"
 }
 
 variable "instance_type" {
   type        = string
-  description = "CVM Instance Type (Recommended: 4 vCPU, 16 GB RAM, e.g. S5.MEDIUM4 or SA3.MEDIUM4)"
-  default     = "S5.MEDIUM4"
+  description = "CVM Instance Type (SA5.LARGE16 for Jakarta 4 vCPU, 16 GB RAM)"
+  default     = "SA5.LARGE16"
 }
 
 variable "ssh_public_key" {
