@@ -6,22 +6,75 @@ data:
     \     \"hide\": true,\n        \"name\": \"Annotations & Alerts\",\n        \"\
     type\": \"dashboard\"\n      }\n    ]\n  },\n  \"editable\": true,\n  \"fiscalYearStartMonth\"\
     : 0,\n  \"graphTooltip\": 0,\n  \"id\": null,\n  \"links\": [],\n  \"liveNow\"\
-    : false,\n  \"panels\": [\n    {\n      \"id\": 1,\n      \"title\": \"Consensus\
-    \ Nodes\",\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n\
-    \        \"w\": 6,\n        \"x\": 0,\n        \"y\": 0\n      },\n      \"targets\"\
-    : [\n        {\n          \"expr\": \"count(rabbitmq_identity_info{job=\\\"rabbitmq-prod\\\
-    \",rabbitmq_endpoint=\\\"aggregated\\\"})\",\n          \"instant\": true,\n \
-    \         \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n   \
-    \     \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n \
-    \     \"fieldConfig\": {\n        \"defaults\": {\n          \"color\": {\n  \
-    \          \"mode\": \"thresholds\"\n          },\n          \"thresholds\": {\n\
-    \            \"mode\": \"absolute\",\n            \"steps\": [\n             \
-    \ {\n                \"color\": \"red\",\n                \"value\": null\n  \
-    \            },\n              {\n                \"color\": \"green\",\n    \
-    \            \"value\": 3\n              }\n            ]\n          }\n     \
-    \   }\n      }\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Active Resource\
+    : false,\n  \"panels\": [\n    {\n      \"id\": \"oracle\",\n      \"title\":\
+    \ \"\",\n      \"type\": \"text\",\n      \"gridPos\": {\n        \"h\": 3,\n\
+    \        \"w\": 24,\n        \"x\": 0,\n        \"y\": 0\n      },\n      \"datasource\"\
+    : {\n        \"type\": \"datasource\",\n        \"uid\": \"grafana\"\n      },\n\
+    \      \"options\": {\n        \"content\": \"\\n<div id=\\\"role-header-oracle\\\
+    \" style=\\\"display: flex; align-items: center; justify-content: space-between;\
+    \ padding: 12px 20px; background: rgba(18, 18, 24, 0.6); border-radius: 8px; border:\
+    \ 1px solid rgba(255,255,255,0.07); font-family: -apple-system, BlinkMacSystemFont,\
+    \ 'Segoe UI', Roboto, sans-serif;\\\">\\n  <div style=\\\"display: flex; align-items:\
+    \ center; gap: 12px;\\\">\\n    <div style=\\\"width: 10px; height: 10px; border-radius:\
+    \ 50%; background: #555; animation: pulse 2s infinite;\\\" id=\\\"role-dot-oracle\\\
+    \"></div>\\n    <span style=\\\"font-size: 18px; font-weight: 700; color: #fff;\\\
+    \">Oracle VM</span>\\n    <span id=\\\"role-badge-oracle\\\" style=\\\"font-size:\
+    \ 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background:\
+    \ rgba(100,100,100,0.3); color: #888; border: 1px solid rgba(255,255,255,0.1);\\\
+    \">Detecting role...</span>\\n  </div>\\n  <div style=\\\"font-size: 12px; color:\
+    \ #8a8a93; display: flex; gap: 20px;\\\">\\n    <span>Shovels Active: <strong\
+    \ id=\\\"shovel-count-oracle\\\" style=\\\"color: #f1c40f;\\\">\\u2014</strong></span>\\\
+    n    <span>Queues: <strong id=\\\"queue-count-oracle\\\" style=\\\"color: #f1c40f;\\\
+    \">\\u2014</strong></span>\\n    <span>Policy: <strong id=\\\"policy-oracle\\\"\
+    \ style=\\\"color: #f1c40f;\\\">\\u2014</strong></span>\\n  </div>\\n</div>\\\
+    n<style>\\n@keyframes pulse {\\n  0%, 100% { opacity: 1; }\\n  50% { opacity:\
+    \ 0.3; }\\n}\\n</style>\\n<script>\\n(async () => {\\n  const auth = \\\"Basic\
+    \ \\\" + btoa(\\\"default_user_13Qp-YqLoEUls5c90BG:xaVG_xlcFzAfR8IWEYT6euzjFsLKLoYA\\\
+    \");\\n  const dot = document.getElementById(\\\"role-dot-oracle\\\");\\n  const\
+    \ badge = document.getElementById(\\\"role-badge-oracle\\\");\\n  const shovelCount\
+    \ = document.getElementById(\\\"shovel-count-oracle\\\");\\n  const queueCount\
+    \ = document.getElementById(\\\"queue-count-oracle\\\");\\n  const policyEl =\
+    \ document.getElementById(\\\"policy-oracle\\\");\\n\\n  try {\\n    const [policiesRes,\
+    \ queuesRes, shovelsRes] = await Promise.all([\\n      fetch(\\\"https://prod.rmq.budd.codes/api/policies/%2F\\\
+    \", { headers: { \\\"Authorization\\\": auth } }),\\n      fetch(\\\"https://prod.rmq.budd.codes/api/queues\\\
+    \", { headers: { \\\"Authorization\\\": auth } }),\\n      fetch(\\\"https://prod.rmq.budd.codes/api/shovels\\\
+    \", { headers: { \\\"Authorization\\\": auth } })\\n    ]);\\n\\n    const policies\
+    \ = await policiesRes.json();\\n    const queues = await queuesRes.json();\\n\
+    \    const shovels = await shovelsRes.json();\\n\\n    // Determine role: active\
+    \ has dead-letter-exchange, passive has message-ttl\\n    const ordersPolicy =\
+    \ policies.find(p => p.name === \\\"orders-policy\\\");\\n    const isActive =\
+    \ ordersPolicy && ordersPolicy.definition && ordersPolicy.definition[\\\"dead-letter-exchange\\\
+    \"];\\n    const role = isActive ? \\\"ACTIVE\\\" : \\\"PASSIVE (DR)\\\";\\n \
+    \   const roleColor = isActive ? \\\"#2ecc71\\\" : \\\"#f39c12\\\";\\n    const\
+    \ dotColor = isActive ? \\\"#2ecc71\\\" : \\\"#f39c12\\\";\\n\\n    dot.style.background\
+    \ = dotColor;\\n    dot.style.boxShadow = `0 0 6px ${dotColor}`;\\n    badge.textContent\
+    \ = role;\\n    badge.style.background = isActive ? \\\"rgba(46,204,113,0.15)\\\
+    \" : \\\"rgba(243,156,18,0.15)\\\";\\n    badge.style.color = roleColor;\\n  \
+    \  badge.style.border = `1px solid ${roleColor}`;\\n\\n    queueCount.textContent\
+    \ = queues.filter(q => !q.name.startsWith(\\\"amq.gen-\\\")).length;\\n\\n   \
+    \ const activeShovels = shovels.filter(s => s.state === \\\"running\\\").length;\\\
+    n    shovelCount.textContent = activeShovels;\\n    shovelCount.style.color =\
+    \ activeShovels > 0 ? \\\"#2ecc71\\\" : \\\"#e74c3c\\\";\\n\\n    const policyDef\
+    \ = ordersPolicy ? Object.keys(ordersPolicy.definition).join(\\\", \\\") : \\\"\
+    None\\\";\\n    policyEl.textContent = policyDef;\\n\\n  } catch (err) {\\n  \
+    \  badge.textContent = \\\"Unreachable\\\";\\n    badge.style.color = \\\"#e74c3c\\\
+    \";\\n    dot.style.background = \\\"#e74c3c\\\";\\n  }\\n})();\\n</script>\\\
+    n\",\n        \"mode\": \"html\"\n      }\n    },\n    {\n      \"id\": 1,\n \
+    \     \"title\": \"Consensus Nodes\",\n      \"type\": \"stat\",\n      \"gridPos\"\
+    : {\n        \"h\": 4,\n        \"w\": 6,\n        \"x\": 0,\n        \"y\": 3\n\
+    \      },\n      \"targets\": [\n        {\n          \"expr\": \"count(rabbitmq_identity_info{job=\\\
+    \"rabbitmq-prod\\\",rabbitmq_endpoint=\\\"aggregated\\\"})\",\n          \"instant\"\
+    : true,\n          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\"\
+    : {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n    \
+    \  },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"color\"\
+    : {\n            \"mode\": \"thresholds\"\n          },\n          \"thresholds\"\
+    : {\n            \"mode\": \"absolute\",\n            \"steps\": [\n         \
+    \     {\n                \"color\": \"red\",\n                \"value\": null\n\
+    \              },\n              {\n                \"color\": \"green\",\n  \
+    \              \"value\": 3\n              }\n            ]\n          }\n   \
+    \     }\n      }\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Active Resource\
     \ Alarms\",\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n\
-    \        \"w\": 6,\n        \"x\": 6,\n        \"y\": 0\n      },\n      \"targets\"\
+    \        \"w\": 6,\n        \"x\": 6,\n        \"y\": 3\n      },\n      \"targets\"\
     : [\n        {\n          \"expr\": \"sum(rabbitmq_alarms_memory_used_watermark{job=\\\
     \"rabbitmq-prod\\\"}) + sum(rabbitmq_alarms_free_disk_space_watermark{job=\\\"\
     rabbitmq-prod\\\"})\",\n          \"instant\": true,\n          \"refId\": \"\
@@ -41,7 +94,7 @@ data:
     \              }\n            ]\n          }\n        }\n      }\n    },\n   \
     \ {\n      \"id\": 3,\n      \"title\": \"Replication Shovel\",\n      \"type\"\
     : \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n        \"w\": 6,\n    \
-    \    \"x\": 12,\n        \"y\": 0\n      },\n      \"targets\": [\n        {\n\
+    \    \"x\": 12,\n        \"y\": 3\n      },\n      \"targets\": [\n        {\n\
     \          \"expr\": \"sum(rabbitmq_detailed_queue_consumers{job=\\\"rabbitmq-prod\\\
     \",queue=~\\\"amq.gen-.*\\\"})\",\n          \"instant\": true,\n          \"\
     refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n        \"type\"\
@@ -60,7 +113,7 @@ data:
     \     \"value\": null\n              }\n            ]\n          }\n        }\n\
     \      }\n    },\n    {\n      \"id\": 4,\n      \"title\": \"Orders DLQ Volume\"\
     ,\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n      \
-    \  \"w\": 6,\n        \"x\": 18,\n        \"y\": 0\n      },\n      \"targets\"\
+    \  \"w\": 6,\n        \"x\": 18,\n        \"y\": 3\n      },\n      \"targets\"\
     : [\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages_ram{job=\\\
     \"rabbitmq-prod\\\",queue=\\\"orders-dlq\\\"} + rabbitmq_detailed_queue_messages_persistent{job=\\\
     \"rabbitmq-prod\\\",queue=\\\"orders-dlq\\\"})\",\n          \"instant\": true,\n\
@@ -74,7 +127,7 @@ data:
     \            \"value\": 1\n              }\n            ]\n          }\n     \
     \   }\n      }\n    },\n    {\n      \"id\": 5,\n      \"title\": \"Queue Message\
     \ Volumes\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"\
-    h\": 8,\n        \"w\": 12,\n        \"x\": 0,\n        \"y\": 4\n      },\n \
+    h\": 8,\n        \"w\": 12,\n        \"x\": 0,\n        \"y\": 7\n      },\n \
     \     \"targets\": [\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages_ram{job=\\\
     \"rabbitmq-prod\\\"} + rabbitmq_detailed_queue_messages_persistent{job=\\\"rabbitmq-prod\\\
     \"}) by (queue)\",\n          \"legendFormat\": \"{{queue}}\",\n          \"refId\"\
@@ -82,7 +135,7 @@ data:
     ,\n        \"uid\": \"prometheus\"\n      }\n    },\n    {\n      \"id\": 6,\n\
     \      \"title\": \"Messaging Throughput (msg/sec)\",\n      \"type\": \"timeseries\"\
     ,\n      \"gridPos\": {\n        \"h\": 8,\n        \"w\": 12,\n        \"x\"\
-    : 12,\n        \"y\": 4\n      },\n      \"targets\": [\n        {\n         \
+    : 12,\n        \"y\": 7\n      },\n      \"targets\": [\n        {\n         \
     \ \"expr\": \"sum(rate(rabbitmq_global_messages_received_total{job=\\\"rabbitmq-prod\\\
     \"}[1m]))\",\n          \"legendFormat\": \"Publish Rate\",\n          \"refId\"\
     : \"A\"\n        },\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_acknowledged_total{job=\\\
@@ -91,7 +144,7 @@ data:
     \   \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n    },\n\
     \    {\n      \"id\": 7,\n      \"title\": \"Node Memory Consumption (%)\",\n\
     \      \"type\": \"bargauge\",\n      \"gridPos\": {\n        \"h\": 5,\n    \
-    \    \"w\": 12,\n        \"x\": 0,\n        \"y\": 12\n      },\n      \"targets\"\
+    \    \"w\": 12,\n        \"x\": 0,\n        \"y\": 15\n      },\n      \"targets\"\
     : [\n        {\n          \"expr\": \"rabbitmq_process_resident_memory_bytes{job=\\\
     \"rabbitmq-prod\\\"} / rabbitmq_resident_memory_limit_bytes{job=\\\"rabbitmq-prod\\\
     \"} * 100\",\n          \"legendFormat\": \"{{pod}}\",\n          \"refId\": \"\
@@ -106,9 +159,9 @@ data:
     \                \"value\": 85\n              }\n            ]\n          }\n\
     \        }\n      },\n      \"options\": {\n        \"orientation\": \"horizontal\"\
     \n      }\n    },\n    {\n      \"id\": 8,\n      \"title\": \"Node Available\
-    \ Disk (GB)\",\n      \"type\": \"gauge\",\n      \"gridPos\": {\n        \"h\"\
-    : 5,\n        \"w\": 12,\n        \"x\": 12,\n        \"y\": 12\n      },\n  \
-    \    \"targets\": [\n        {\n          \"expr\": \"rabbitmq_disk_space_available_bytes{job=\\\
+    \ Disk\",\n      \"type\": \"gauge\",\n      \"gridPos\": {\n        \"h\": 5,\n\
+    \        \"w\": 12,\n        \"x\": 12,\n        \"y\": 15\n      },\n      \"\
+    targets\": [\n        {\n          \"expr\": \"rabbitmq_disk_space_available_bytes{job=\\\
     \"rabbitmq-prod\\\"} / 1024 / 1024 / 1024\",\n          \"legendFormat\": \"{{pod}}\"\
     ,\n          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n\
     \        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n\
@@ -122,8 +175,8 @@ data:
     \  ],\n  \"refresh\": \"10s\",\n  \"schemaVersion\": 39,\n  \"tags\": [\n    \"\
     rabbitmq\"\n  ],\n  \"templating\": {\n    \"list\": []\n  },\n  \"time\": {\n\
     \    \"from\": \"now-1h\",\n    \"to\": \"now\"\n  },\n  \"timepicker\": {},\n\
-    \  \"timezone\": \"\",\n  \"title\": \"RabbitMQ Primary (Prod) Cluster Dashboard\"\
-    ,\n  \"version\": 1,\n  \"weekStart\": \"\"\n}"
+    \  \"timezone\": \"\",\n  \"title\": \"Oracle VM \\u2014 RabbitMQ Cluster\",\n\
+    \  \"version\": 1,\n  \"weekStart\": \"\"\n}"
 kind: ConfigMap
 metadata:
   labels:
@@ -140,23 +193,76 @@ data:
     \     \"hide\": true,\n        \"name\": \"Annotations & Alerts\",\n        \"\
     type\": \"dashboard\"\n      }\n    ]\n  },\n  \"editable\": true,\n  \"fiscalYearStartMonth\"\
     : 0,\n  \"graphTooltip\": 0,\n  \"id\": null,\n  \"links\": [],\n  \"liveNow\"\
-    : false,\n  \"panels\": [\n    {\n      \"id\": 1,\n      \"title\": \"Consensus\
-    \ Nodes\",\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n\
-    \        \"w\": 8,\n        \"x\": 0,\n        \"y\": 0\n      },\n      \"targets\"\
-    : [\n        {\n          \"expr\": \"count(rabbitmq_identity_info{job=~\\\"rabbitmq-dr-metrics-.*\\\
-    \",rabbitmq_endpoint=\\\"aggregated\\\"})\",\n          \"instant\": true,\n \
-    \         \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n   \
-    \     \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n \
-    \     \"fieldConfig\": {\n        \"defaults\": {\n          \"color\": {\n  \
-    \          \"mode\": \"thresholds\"\n          },\n          \"thresholds\": {\n\
-    \            \"mode\": \"absolute\",\n            \"steps\": [\n             \
-    \ {\n                \"color\": \"red\",\n                \"value\": null\n  \
-    \            },\n              {\n                \"color\": \"green\",\n    \
-    \            \"value\": 3\n              }\n            ]\n          }\n     \
-    \   }\n      }\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Active Resource\
-    \ Alarms\",\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n\
-    \        \"w\": 8,\n        \"x\": 8,\n        \"y\": 0\n      },\n      \"targets\"\
-    : [\n        {\n          \"expr\": \"sum(rabbitmq_alarms_memory_used_watermark{job=~\\\
+    : false,\n  \"panels\": [\n    {\n      \"id\": \"tencent\",\n      \"title\"\
+    : \"\",\n      \"type\": \"text\",\n      \"gridPos\": {\n        \"h\": 3,\n\
+    \        \"w\": 24,\n        \"x\": 0,\n        \"y\": 0\n      },\n      \"datasource\"\
+    : {\n        \"type\": \"datasource\",\n        \"uid\": \"grafana\"\n      },\n\
+    \      \"options\": {\n        \"content\": \"\\n<div id=\\\"role-header-tencent\\\
+    \" style=\\\"display: flex; align-items: center; justify-content: space-between;\
+    \ padding: 12px 20px; background: rgba(18, 18, 24, 0.6); border-radius: 8px; border:\
+    \ 1px solid rgba(255,255,255,0.07); font-family: -apple-system, BlinkMacSystemFont,\
+    \ 'Segoe UI', Roboto, sans-serif;\\\">\\n  <div style=\\\"display: flex; align-items:\
+    \ center; gap: 12px;\\\">\\n    <div style=\\\"width: 10px; height: 10px; border-radius:\
+    \ 50%; background: #555; animation: pulse 2s infinite;\\\" id=\\\"role-dot-tencent\\\
+    \"></div>\\n    <span style=\\\"font-size: 18px; font-weight: 700; color: #fff;\\\
+    \">Tencent VM</span>\\n    <span id=\\\"role-badge-tencent\\\" style=\\\"font-size:\
+    \ 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background:\
+    \ rgba(100,100,100,0.3); color: #888; border: 1px solid rgba(255,255,255,0.1);\\\
+    \">Detecting role...</span>\\n  </div>\\n  <div style=\\\"font-size: 12px; color:\
+    \ #8a8a93; display: flex; gap: 20px;\\\">\\n    <span>Shovels Active: <strong\
+    \ id=\\\"shovel-count-tencent\\\" style=\\\"color: #f1c40f;\\\">\\u2014</strong></span>\\\
+    n    <span>Queues: <strong id=\\\"queue-count-tencent\\\" style=\\\"color: #f1c40f;\\\
+    \">\\u2014</strong></span>\\n    <span>Policy: <strong id=\\\"policy-tencent\\\
+    \" style=\\\"color: #f1c40f;\\\">\\u2014</strong></span>\\n  </div>\\n</div>\\\
+    n<style>\\n@keyframes pulse {\\n  0%, 100% { opacity: 1; }\\n  50% { opacity:\
+    \ 0.3; }\\n}\\n</style>\\n<script>\\n(async () => {\\n  const auth = \\\"Basic\
+    \ \\\" + btoa(\\\"default_user_znSPT_rK4vKegHb1jZ1:HceYy4C_S4RIlPgv0jMmGpO4e9tnR_VN\\\
+    \");\\n  const dot = document.getElementById(\\\"role-dot-tencent\\\");\\n  const\
+    \ badge = document.getElementById(\\\"role-badge-tencent\\\");\\n  const shovelCount\
+    \ = document.getElementById(\\\"shovel-count-tencent\\\");\\n  const queueCount\
+    \ = document.getElementById(\\\"queue-count-tencent\\\");\\n  const policyEl =\
+    \ document.getElementById(\\\"policy-tencent\\\");\\n\\n  try {\\n    const [policiesRes,\
+    \ queuesRes, shovelsRes] = await Promise.all([\\n      fetch(\\\"https://dr.rmq.budd.codes/api/policies/%2F\\\
+    \", { headers: { \\\"Authorization\\\": auth } }),\\n      fetch(\\\"https://dr.rmq.budd.codes/api/queues\\\
+    \", { headers: { \\\"Authorization\\\": auth } }),\\n      fetch(\\\"https://dr.rmq.budd.codes/api/shovels\\\
+    \", { headers: { \\\"Authorization\\\": auth } })\\n    ]);\\n\\n    const policies\
+    \ = await policiesRes.json();\\n    const queues = await queuesRes.json();\\n\
+    \    const shovels = await shovelsRes.json();\\n\\n    // Determine role: active\
+    \ has dead-letter-exchange, passive has message-ttl\\n    const ordersPolicy =\
+    \ policies.find(p => p.name === \\\"orders-policy\\\");\\n    const isActive =\
+    \ ordersPolicy && ordersPolicy.definition && ordersPolicy.definition[\\\"dead-letter-exchange\\\
+    \"];\\n    const role = isActive ? \\\"ACTIVE\\\" : \\\"PASSIVE (DR)\\\";\\n \
+    \   const roleColor = isActive ? \\\"#2ecc71\\\" : \\\"#f39c12\\\";\\n    const\
+    \ dotColor = isActive ? \\\"#2ecc71\\\" : \\\"#f39c12\\\";\\n\\n    dot.style.background\
+    \ = dotColor;\\n    dot.style.boxShadow = `0 0 6px ${dotColor}`;\\n    badge.textContent\
+    \ = role;\\n    badge.style.background = isActive ? \\\"rgba(46,204,113,0.15)\\\
+    \" : \\\"rgba(243,156,18,0.15)\\\";\\n    badge.style.color = roleColor;\\n  \
+    \  badge.style.border = `1px solid ${roleColor}`;\\n\\n    queueCount.textContent\
+    \ = queues.filter(q => !q.name.startsWith(\\\"amq.gen-\\\")).length;\\n\\n   \
+    \ const activeShovels = shovels.filter(s => s.state === \\\"running\\\").length;\\\
+    n    shovelCount.textContent = activeShovels;\\n    shovelCount.style.color =\
+    \ activeShovels > 0 ? \\\"#2ecc71\\\" : \\\"#e74c3c\\\";\\n\\n    const policyDef\
+    \ = ordersPolicy ? Object.keys(ordersPolicy.definition).join(\\\", \\\") : \\\"\
+    None\\\";\\n    policyEl.textContent = policyDef;\\n\\n  } catch (err) {\\n  \
+    \  badge.textContent = \\\"Unreachable\\\";\\n    badge.style.color = \\\"#e74c3c\\\
+    \";\\n    dot.style.background = \\\"#e74c3c\\\";\\n  }\\n})();\\n</script>\\\
+    n\",\n        \"mode\": \"html\"\n      }\n    },\n    {\n      \"id\": 1,\n \
+    \     \"title\": \"Consensus Nodes\",\n      \"type\": \"stat\",\n      \"gridPos\"\
+    : {\n        \"h\": 4,\n        \"w\": 8,\n        \"x\": 0,\n        \"y\": 3\n\
+    \      },\n      \"targets\": [\n        {\n          \"expr\": \"count(rabbitmq_identity_info{job=~\\\
+    \"rabbitmq-dr-metrics-.*\\\",rabbitmq_endpoint=\\\"aggregated\\\"})\",\n     \
+    \     \"instant\": true,\n          \"refId\": \"A\"\n        }\n      ],\n  \
+    \    \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"\
+    prometheus\"\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n  \
+    \        \"color\": {\n            \"mode\": \"thresholds\"\n          },\n  \
+    \        \"thresholds\": {\n            \"mode\": \"absolute\",\n            \"\
+    steps\": [\n              {\n                \"color\": \"red\",\n           \
+    \     \"value\": null\n              },\n              {\n                \"color\"\
+    : \"green\",\n                \"value\": 3\n              }\n            ]\n \
+    \         }\n        }\n      }\n    },\n    {\n      \"id\": 2,\n      \"title\"\
+    : \"Active Resource Alarms\",\n      \"type\": \"stat\",\n      \"gridPos\": {\n\
+    \        \"h\": 4,\n        \"w\": 8,\n        \"x\": 8,\n        \"y\": 3\n \
+    \     },\n      \"targets\": [\n        {\n          \"expr\": \"sum(rabbitmq_alarms_memory_used_watermark{job=~\\\
     \"rabbitmq-dr-metrics-.*\\\"}) + sum(rabbitmq_alarms_free_disk_space_watermark{job=~\\\
     \"rabbitmq-dr-metrics-.*\\\"})\",\n          \"instant\": true,\n          \"\
     refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n        \"type\"\
@@ -173,24 +279,24 @@ data:
     \         \"thresholds\": {\n            \"mode\": \"absolute\",\n           \
     \ \"steps\": [\n              {\n                \"color\": \"green\",\n     \
     \           \"value\": null\n              }\n            ]\n          }\n   \
-    \     }\n      }\n    },\n    {\n      \"id\": 3,\n      \"title\": \"DR Rolling\
-    \ Buffer Mode\",\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"\
-    h\": 4,\n        \"w\": 8,\n        \"x\": 16,\n        \"y\": 0\n      },\n \
+    \     }\n      }\n    },\n    {\n      \"id\": 3,\n      \"title\": \"Cluster\
+    \ Role Policy\",\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"\
+    h\": 4,\n        \"w\": 8,\n        \"x\": 16,\n        \"y\": 3\n      },\n \
     \     \"targets\": [\n        {\n          \"expr\": \"vector(1)\",\n        \
     \  \"instant\": true,\n          \"refId\": \"A\"\n        }\n      ],\n     \
     \ \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\
     \n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"color\"\
     : {\n            \"mode\": \"thresholds\"\n          },\n          \"mappings\"\
     : [\n            {\n              \"type\": \"value\",\n              \"options\"\
-    : {\n                \"1\": {\n                  \"text\": \"TTL 3m / 10GB Active\"\
-    ,\n                  \"color\": \"green\"\n                }\n              }\n\
+    : {\n                \"1\": {\n                  \"text\": \"TTL 3m / 10GB Buffer\"\
+    ,\n                  \"color\": \"orange\"\n                }\n              }\n\
     \            }\n          ],\n          \"thresholds\": {\n            \"mode\"\
     : \"absolute\",\n            \"steps\": [\n              {\n                \"\
-    color\": \"green\",\n                \"value\": null\n              }\n      \
-    \      ]\n          }\n        }\n      }\n    },\n    {\n      \"id\": 4,\n \
-    \     \"title\": \"Queue Message Volumes\",\n      \"type\": \"timeseries\",\n\
+    color\": \"orange\",\n                \"value\": null\n              }\n     \
+    \       ]\n          }\n        }\n      }\n    },\n    {\n      \"id\": 4,\n\
+    \      \"title\": \"Queue Message Volumes\",\n      \"type\": \"timeseries\",\n\
     \      \"gridPos\": {\n        \"h\": 8,\n        \"w\": 12,\n        \"x\": 0,\n\
-    \        \"y\": 4\n      },\n      \"targets\": [\n        {\n          \"expr\"\
+    \        \"y\": 7\n      },\n      \"targets\": [\n        {\n          \"expr\"\
     : \"sum(rabbitmq_detailed_queue_messages_ram{job=~\\\"rabbitmq-dr-metrics-.*\\\
     \"} + rabbitmq_detailed_queue_messages_persistent{job=~\\\"rabbitmq-dr-metrics-.*\\\
     \"}) by (queue)\",\n          \"legendFormat\": \"{{queue}}\",\n          \"refId\"\
@@ -198,7 +304,7 @@ data:
     ,\n        \"uid\": \"prometheus\"\n      }\n    },\n    {\n      \"id\": 5,\n\
     \      \"title\": \"Messaging Throughput (msg/sec)\",\n      \"type\": \"timeseries\"\
     ,\n      \"gridPos\": {\n        \"h\": 8,\n        \"w\": 12,\n        \"x\"\
-    : 12,\n        \"y\": 4\n      },\n      \"targets\": [\n        {\n         \
+    : 12,\n        \"y\": 7\n      },\n      \"targets\": [\n        {\n         \
     \ \"expr\": \"sum(rate(rabbitmq_global_messages_received_total{job=~\\\"rabbitmq-dr-metrics-.*\\\
     \"}[1m]))\",\n          \"legendFormat\": \"Publish Rate\",\n          \"refId\"\
     : \"A\"\n        },\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_acknowledged_total{job=~\\\
@@ -207,7 +313,7 @@ data:
     \        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n\
     \    },\n    {\n      \"id\": 6,\n      \"title\": \"Node Memory Consumption (%)\"\
     ,\n      \"type\": \"bargauge\",\n      \"gridPos\": {\n        \"h\": 5,\n  \
-    \      \"w\": 12,\n        \"x\": 0,\n        \"y\": 12\n      },\n      \"targets\"\
+    \      \"w\": 12,\n        \"x\": 0,\n        \"y\": 15\n      },\n      \"targets\"\
     : [\n        {\n          \"expr\": \"rabbitmq_process_resident_memory_bytes{job=~\\\
     \"rabbitmq-dr-metrics-.*\\\"} / rabbitmq_resident_memory_limit_bytes{job=~\\\"\
     rabbitmq-dr-metrics-.*\\\"} * 100\",\n          \"legendFormat\": \"{{job}}\"\
@@ -222,9 +328,9 @@ data:
     \     \"color\": \"red\",\n                \"value\": 85\n              }\n  \
     \          ]\n          }\n        }\n      },\n      \"options\": {\n       \
     \ \"orientation\": \"horizontal\"\n      }\n    },\n    {\n      \"id\": 7,\n\
-    \      \"title\": \"Node Available Disk (GB)\",\n      \"type\": \"gauge\",\n\
-    \      \"gridPos\": {\n        \"h\": 5,\n        \"w\": 12,\n        \"x\": 12,\n\
-    \        \"y\": 12\n      },\n      \"targets\": [\n        {\n          \"expr\"\
+    \      \"title\": \"Node Available Disk\",\n      \"type\": \"gauge\",\n     \
+    \ \"gridPos\": {\n        \"h\": 5,\n        \"w\": 12,\n        \"x\": 12,\n\
+    \        \"y\": 15\n      },\n      \"targets\": [\n        {\n          \"expr\"\
     : \"rabbitmq_disk_space_available_bytes{job=~\\\"rabbitmq-dr-metrics-.*\\\"} /\
     \ 1024 / 1024 / 1024\",\n          \"legendFormat\": \"{{job}}\",\n          \"\
     refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n        \"type\"\
@@ -239,8 +345,8 @@ data:
     10s\",\n  \"schemaVersion\": 39,\n  \"tags\": [\n    \"rabbitmq\"\n  ],\n  \"\
     templating\": {\n    \"list\": []\n  },\n  \"time\": {\n    \"from\": \"now-1h\"\
     ,\n    \"to\": \"now\"\n  },\n  \"timepicker\": {},\n  \"timezone\": \"\",\n \
-    \ \"title\": \"RabbitMQ Disaster Recovery (DR) Cluster Dashboard\",\n  \"version\"\
-    : 1,\n  \"weekStart\": \"\"\n}"
+    \ \"title\": \"Tencent VM \\u2014 RabbitMQ Cluster\",\n  \"version\": 1,\n  \"\
+    weekStart\": \"\"\n}"
 kind: ConfigMap
 metadata:
   labels:
@@ -259,7 +365,7 @@ data:
     \  \"fiscalYearStartMonth\": 0,\n  \"graphTooltip\": 0,\n  \"id\": null,\n  \"\
     links\": [],\n  \"liveNow\": false,\n  \"panels\": [\n    {\n      \"id\": 1,\n\
     \      \"title\": \"Interactive Message Console\",\n      \"type\": \"text\",\n\
-    \      \"gridPos\": {\n        \"h\": 20,\n        \"w\": 24,\n        \"x\":\
+    \      \"gridPos\": {\n        \"h\": 22,\n        \"w\": 24,\n        \"x\":\
     \ 0,\n        \"y\": 0\n      },\n      \"datasource\": {\n        \"type\": \"\
     datasource\",\n        \"uid\": \"grafana\"\n      },\n      \"options\": {\n\
     \        \"content\": \"\\n<div class=\\\"console-container\\\" style=\\\"padding:\
@@ -327,23 +433,23 @@ data:
     \ 16px;\\\">\\n      <h3 style=\\\"margin: 0; font-size: 16px; font-weight: 500;\
     \ color: #e74c3c;\\\">Purge / Clear Queue</h3>\\n      \\n      <div style=\\\"\
     display: flex; flex-direction: column; gap: 6px;\\\">\\n        <label style=\\\
-    \"font-size: 12px; color: #8a8a93; font-weight: 500;\\\">Cluster Location</label>\\\
-    n        <select id=\\\"purge-cluster\\\" style=\\\"background: rgba(0,0,0,0.5);\
+    \"font-size: 12px; color: #8a8a93; font-weight: 500;\\\">Cluster</label>\\n  \
+    \      <select id=\\\"purge-cluster\\\" style=\\\"background: rgba(0,0,0,0.5);\
     \ border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #fff; padding:\
-    \ 8px; font-size: 14px; outline: none;\\\">\\n          <option value=\\\"prod\\\
-    \">Primary (Prod)</option>\\n          <option value=\\\"dr\\\">Disaster Recovery\
-    \ (DR)</option>\\n        </select>\\n      </div>\\n\\n      <div style=\\\"\
-    display: flex; flex-direction: column; gap: 6px;\\\">\\n        <label style=\\\
-    \"font-size: 12px; color: #8a8a93; font-weight: 500;\\\">Target Queue</label>\\\
-    n        <select id=\\\"purge-queue\\\" style=\\\"background: rgba(0,0,0,0.5);\
-    \ border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #fff; padding:\
-    \ 8px; font-size: 14px; outline: none;\\\">\\n          <option>Loading...</option>\\\
-    n        </select>\\n      </div>\\n      \\n      <button onclick=\\\"confirmAndPurge()\\\
-    \" style=\\\"background: linear-gradient(135deg, #e74c3c, #c0392b); border: none;\
-    \ border-radius: 4px; color: #fff; padding: 10px; font-size: 14px; font-weight:\
-    \ 600; cursor: pointer; transition: opacity 0.2s;\\\" onmouseover=\\\"this.style.opacity=0.9\\\
-    \" onmouseout=\\\"this.style.opacity=1.0\\\">Purge Queue</button>\\n    </div>\\\
-    n  </div>\\n\\n  <!-- Terminal Output -->\\n  <div style=\\\"display: flex; flex-direction:\
+    \ 8px; font-size: 14px; outline: none;\\\">\\n          <option value=\\\"oracle\\\
+    \">Oracle VM</option>\\n          <option value=\\\"tencent\\\">Tencent VM</option>\\\
+    n        </select>\\n      </div>\\n\\n      <div style=\\\"display: flex; flex-direction:\
+    \ column; gap: 6px;\\\">\\n        <label style=\\\"font-size: 12px; color: #8a8a93;\
+    \ font-weight: 500;\\\">Target Queue</label>\\n        <select id=\\\"purge-queue\\\
+    \" style=\\\"background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);\
+    \ border-radius: 4px; color: #fff; padding: 8px; font-size: 14px; outline: none;\\\
+    \">\\n          <option>Loading...</option>\\n        </select>\\n      </div>\\\
+    n      \\n      <button onclick=\\\"confirmAndPurge()\\\" style=\\\"background:\
+    \ linear-gradient(135deg, #e74c3c, #c0392b); border: none; border-radius: 4px;\
+    \ color: #fff; padding: 10px; font-size: 14px; font-weight: 600; cursor: pointer;\
+    \ transition: opacity 0.2s;\\\" onmouseover=\\\"this.style.opacity=0.9\\\" onmouseout=\\\
+    \"this.style.opacity=1.0\\\">Purge Queue</button>\\n    </div>\\n  </div>\\n\\\
+    n  <!-- Terminal Output -->\\n  <div style=\\\"display: flex; flex-direction:\
     \ column; gap: 8px;\\\">\\n    <div style=\\\"display: flex; justify-content:\
     \ space-between; align-items: center;\\\">\\n      <h3 style=\\\"margin: 0; font-size:\
     \ 14px; font-weight: 500; color: #9b59b6;\\\">Console Log</h3>\\n      <button\
@@ -357,134 +463,125 @@ data:
     \ 6px; padding: 12px; height: 250px; overflow-y: auto; font-family: monospace;\
     \ font-size: 12px; line-height: 1.5; color: #a9b7c6; display: flex; flex-direction:\
     \ column; gap: 8px;\\\"></div>\\n  </div>\\n</div>\\n\\n<script>\\n(() => {\\\
-    n  // Credentials\\n  const prodUser = \\\"default_user_13Qp-YqLoEUls5c90BG\\\"\
-    ;\\n  const prodPass = \\\"xaVG_xlcFzAfR8IWEYT6euzjFsLKLoYA\\\";\\n  const drUser\
-    \ = \\\"default_user_znSPT_rK4vKegHb1jZ1\\\";\\n  const drPass = \\\"HceYy4C_S4RIlPgv0jMmGpO4e9tnR_VN\\\
-    \";\\n\\n  const prodAuth = \\\"Basic \\\" + btoa(prodUser + \\\":\\\" + prodPass);\\\
-    n  const drAuth = \\\"Basic \\\" + btoa(drUser + \\\":\\\" + drPass);\\n\\n  window.logTerminal\
-    \ = function(message, type = \\\"info\\\") {\\n    const term = document.getElementById(\\\
-    \"console-terminal\\\");\\n    if (!term) return;\\n    const log = document.createElement(\\\
-    \"div\\\");\\n    const time = new Date().toLocaleTimeString();\\n    let color\
-    \ = \\\"#a9b7c6\\\";\\n    if (type === \\\"success\\\") color = \\\"#2ecc71\\\
-    \";\\n    if (type === \\\"error\\\") color = \\\"#e74c3c\\\";\\n    if (type\
-    \ === \\\"outgoing\\\") color = \\\"#3498db\\\";\\n    \\n    log.style.color\
-    \ = color;\\n    log.innerHTML = `<span style=\\\"color: #6a8759;\\\">[${time}]</span>\
-    \ ${message}`;\\n    term.appendChild(log);\\n    term.scrollTop = term.scrollHeight;\\\
-    n  };\\n\\n  // Dynamically load queues from active cluster\\n  async function\
-    \ loadDynamicQueues() {\\n    try {\\n      const res = await fetch(\\\"https://prod.rmq.budd.codes/api/queues\\\
-    \", {\\n        method: \\\"GET\\\",\\n        headers: {\\n          \\\"Authorization\\\
-    \": prodAuth\\n        }\\n      });\\n      if (!res.ok) throw new Error(await\
-    \ res.text() || res.statusText);\\n      const queues = await res.json();\\n \
-    \     \\n      const getQueueSelect = document.getElementById(\\\"get-queue\\\"\
-    );\\n      const purgeQueueSelect = document.getElementById(\\\"purge-queue\\\"\
-    );\\n      \\n      if (getQueueSelect && purgeQueueSelect) {\\n        getQueueSelect.innerHTML\
-    \ = \\\"\\\";\\n        purgeQueueSelect.innerHTML = \\\"\\\";\\n        \\n \
-    \       queues.forEach(q => {\\n          const optGet = document.createElement(\\\
-    \"option\\\");\\n          optGet.value = q.name;\\n          optGet.textContent\
-    \ = q.name;\\n          getQueueSelect.appendChild(optGet);\\n          \\n  \
-    \        const optPurge = document.createElement(\\\"option\\\");\\n         \
-    \ optPurge.value = q.name;\\n          optPurge.textContent = q.name;\\n     \
-    \     purgeQueueSelect.appendChild(optPurge);\\n        });\\n        \\n    \
-    \    logTerminal(`Loaded ${queues.length} queues dynamically from active cluster.`,\
+    n  // Credentials\\n  const oracleUser = \\\"default_user_13Qp-YqLoEUls5c90BG\\\
+    \";\\n  const oraclePass = \\\"xaVG_xlcFzAfR8IWEYT6euzjFsLKLoYA\\\";\\n  const\
+    \ tencentUser = \\\"default_user_znSPT_rK4vKegHb1jZ1\\\";\\n  const tencentPass\
+    \ = \\\"HceYy4C_S4RIlPgv0jMmGpO4e9tnR_VN\\\";\\n\\n  const oracleAuth = \\\"Basic\
+    \ \\\" + btoa(oracleUser + \\\":\\\" + oraclePass);\\n  const tencentAuth = \\\
+    \"Basic \\\" + btoa(tencentUser + \\\":\\\" + tencentPass);\\n\\n  // Detect active\
+    \ cluster by checking policy definition\\n  let activeClusterUrl = \\\"https://prod.rmq.budd.codes\\\
+    \";\\n  let activeClusterAuth = oracleAuth;\\n  let activeClusterName = \\\"Oracle\
+    \ VM\\\";\\n\\n  window.logTerminal = function(message, type = \\\"info\\\") {\\\
+    n    const term = document.getElementById(\\\"console-terminal\\\");\\n    if\
+    \ (!term) return;\\n    const log = document.createElement(\\\"div\\\");\\n  \
+    \  const time = new Date().toLocaleTimeString();\\n    let color = \\\"#a9b7c6\\\
+    \";\\n    if (type === \\\"success\\\") color = \\\"#2ecc71\\\";\\n    if (type\
+    \ === \\\"error\\\") color = \\\"#e74c3c\\\";\\n    if (type === \\\"outgoing\\\
+    \") color = \\\"#3498db\\\";\\n    if (type === \\\"warn\\\") color = \\\"#f39c12\\\
+    \";\\n    \\n    log.style.color = color;\\n    log.innerHTML = `<span style=\\\
+    \"color: #6a8759;\\\">[${time}]</span> ${message}`;\\n    term.appendChild(log);\\\
+    n    term.scrollTop = term.scrollHeight;\\n  };\\n\\n  // Detect which cluster\
+    \ is active from policy\\n  async function detectActiveCluster() {\\n    const\
+    \ clusters = [\\n      { name: \\\"Oracle VM\\\", url: \\\"https://prod.rmq.budd.codes\\\
+    \", auth: oracleAuth },\\n      { name: \\\"Tencent VM\\\", url: \\\"https://dr.rmq.budd.codes\\\
+    \", auth: tencentAuth }\\n    ];\\n\\n    for (const cluster of clusters) {\\\
+    n      try {\\n        const res = await fetch(`${cluster.url}/api/policies/%2F`,\
+    \ {\\n          headers: { \\\"Authorization\\\": cluster.auth }\\n        });\\\
+    n        const policies = await res.json();\\n        const ordersPolicy = policies.find(p\
+    \ => p.name === \\\"orders-policy\\\");\\n        if (ordersPolicy && ordersPolicy.definition\
+    \ && ordersPolicy.definition[\\\"dead-letter-exchange\\\"]) {\\n          activeClusterUrl\
+    \ = cluster.url;\\n          activeClusterAuth = cluster.auth;\\n          activeClusterName\
+    \ = cluster.name;\\n          logTerminal(`Active cluster detected: <b>${cluster.name}</b>\
+    \ (has DLX policy \\u2014 no TTL buffer)`, \\\"success\\\");\\n          return;\\\
+    n        }\\n      } catch (e) {}\\n    }\\n    logTerminal(\\\"Could not detect\
+    \ active cluster via policy. Defaulting to Oracle VM.\\\", \\\"warn\\\");\\n \
+    \ }\\n\\n  // Dynamically load queues from active cluster\\n  async function loadDynamicQueues()\
+    \ {\\n    try {\\n      const res = await fetch(`${activeClusterUrl}/api/queues`,\
+    \ {\\n        headers: { \\\"Authorization\\\": activeClusterAuth }\\n      });\\\
+    n      if (!res.ok) throw new Error(res.statusText);\\n      const queues = await\
+    \ res.json();\\n      const filtered = queues.filter(q => !q.name.startsWith(\\\
+    \"amq.gen-\\\"));\\n\\n      const getQueueSelect = document.getElementById(\\\
+    \"get-queue\\\");\\n      const purgeQueueSelect = document.getElementById(\\\"\
+    purge-queue\\\");\\n      \\n      if (getQueueSelect && purgeQueueSelect) {\\\
+    n        getQueueSelect.innerHTML = \\\"\\\";\\n        purgeQueueSelect.innerHTML\
+    \ = \\\"\\\";\\n        filtered.forEach(q => {\\n          getQueueSelect.innerHTML\
+    \ += `<option value=\\\"${q.name}\\\">${q.name}</option>`;\\n          purgeQueueSelect.innerHTML\
+    \ += `<option value=\\\"${q.name}\\\">${q.name}</option>`;\\n        });\\n  \
+    \      logTerminal(`Loaded ${filtered.length} queues from active cluster (${activeClusterName}).`,\
     \ \\\"success\\\");\\n      }\\n    } catch (err) {\\n      logTerminal(`Error\
-    \ loading queues dynamically: ${err.message}`, \\\"error\\\");\\n      \\n   \
-    \   // Fallback\\n      const fallback = [\\\"orders-queue\\\", \\\"replicated-queue\\\
-    \", \\\"orders-dlq\\\", \\\"notifications-queue\\\"];\\n      const getQueueSelect\
-    \ = document.getElementById(\\\"get-queue\\\");\\n      const purgeQueueSelect\
-    \ = document.getElementById(\\\"purge-queue\\\");\\n      if (getQueueSelect &&\
-    \ purgeQueueSelect) {\\n        getQueueSelect.innerHTML = \\\"\\\";\\n      \
-    \  purgeQueueSelect.innerHTML = \\\"\\\";\\n        fallback.forEach(q => {\\\
-    n          getQueueSelect.innerHTML += `<option value=\\\"${q}\\\">${q}</option>`;\\\
-    n          purgeQueueSelect.innerHTML += `<option value=\\\"${q}\\\">${q}</option>`;\\\
-    n        });\\n      }\\n    }\\n  }\\n\\n  // Dynamically load routing keys from\
-    \ active cluster\\n  async function loadDynamicRoutingKeys() {\\n    try {\\n\
-    \      const res = await fetch(\\\"https://prod.rmq.budd.codes/api/exchanges/%2F/orders-exchange/bindings/source\\\
-    \", {\\n        method: \\\"GET\\\",\\n        headers: {\\n          \\\"Authorization\\\
-    \": prodAuth\\n        }\\n      });\\n      if (!res.ok) throw new Error(await\
-    \ res.text() || res.statusText);\\n      const bindings = await res.json();\\\
-    n      \\n      const sendRoutingKeySelect = document.getElementById(\\\"send-routing-key\\\
-    \");\\n      if (sendRoutingKeySelect) {\\n        sendRoutingKeySelect.innerHTML\
-    \ = \\\"\\\";\\n        const keys = [...new Set(bindings.map(b => b.routing_key).filter(k\
-    \ => k))];\\n        \\n        if (keys.length === 0) {\\n          keys.push(\\\
-    \"orders.test\\\", \\\"orders.create\\\", \\\"orders.delete\\\");\\n        }\\\
-    n        \\n        keys.forEach(k => {\\n          const opt = document.createElement(\\\
-    \"option\\\");\\n          opt.value = k;\\n          opt.textContent = k;\\n\
-    \          sendRoutingKeySelect.appendChild(opt);\\n        });\\n        \\n\
-    \        logTerminal(`Loaded ${keys.length} routing keys dynamically from orders-exchange\
-    \ bindings.`, \\\"success\\\");\\n      }\\n    } catch (err) {\\n      logTerminal(`Error\
-    \ loading routing keys dynamically: ${err.message}`, \\\"error\\\");\\n      const\
-    \ fallback = [\\\"orders.test\\\", \\\"orders.create\\\", \\\"orders.delete\\\"\
-    ];\\n      const sendRoutingKeySelect = document.getElementById(\\\"send-routing-key\\\
-    \");\\n      if (sendRoutingKeySelect) {\\n        sendRoutingKeySelect.innerHTML\
-    \ = \\\"\\\";\\n        fallback.forEach(k => {\\n          sendRoutingKeySelect.innerHTML\
-    \ += `<option value=\\\"${k}\\\">${k}</option>`;\\n        });\\n      }\\n  \
-    \  }\\n  }\\n\\n  window.publishMessage = async function() {\\n    const routingKey\
-    \ = document.getElementById(\\\"send-routing-key\\\").value;\\n    const payload\
-    \ = document.getElementById(\\\"send-payload\\\").value || \\\"Test payload\\\"\
-    ;\\n    \\n    logTerminal(`Sending message to exchange orders-exchange [routing_key:\
-    \ ${routingKey}]...`, \\\"outgoing\\\");\\n    \\n    try {\\n      const res\
-    \ = await fetch(\\\"https://prod.rmq.budd.codes/api/exchanges/%2F/orders-exchange/publish\\\
-    \", {\\n        method: \\\"POST\\\",\\n        headers: {\\n          \\\"Authorization\\\
-    \": prodAuth,\\n          \\\"Content-Type\\\": \\\"application/json\\\"\\n  \
-    \      },\\n        body: JSON.stringify({\\n          properties: { delivery_mode:\
-    \ 2 },\\n          routing_key: routingKey,\\n          payload: payload,\\n \
-    \         payload_encoding: \\\"string\\\"\\n        })\\n      });\\n      \\\
-    n      if (!res.ok) throw new Error(await res.text() || res.statusText);\\n  \
-    \    \\n      const result = await res.json();\\n      if (result.routed) {\\\
-    n        logTerminal(`Success! Message routed successfully.`, \\\"success\\\"\
-    );\\n      } else {\\n        logTerminal(`Warning: Message published but was\
-    \ not routed to any queues.`, \\\"error\\\");\\n      }\\n    } catch (err) {\\\
-    n      logTerminal(`Error publishing message: ${err.message}`, \\\"error\\\");\\\
-    n    }\\n  };\\n\\n  window.fetchMessages = async function() {\\n    const queue\
-    \ = document.getElementById(\\\"get-queue\\\").value;\\n    const count = parseInt(document.getElementById(\\\
-    \"get-count\\\").value) || 5;\\n    const requeue = document.getElementById(\\\
-    \"get-requeue\\\").checked;\\n    const ackmode = requeue ? \\\"ack_requeue_true\\\
-    \" : \\\"ack_requeue_false\\\";\\n    \\n    logTerminal(`Fetching up to ${count}\
-    \ messages from queue ${queue} (requeue: ${requeue})...`, \\\"outgoing\\\");\\\
-    n    \\n    try {\\n      const res = await fetch(`https://prod.rmq.budd.codes/api/queues/%2F/${queue}/get`,\
-    \ {\\n        method: \\\"POST\\\",\\n        headers: {\\n          \\\"Authorization\\\
-    \": prodAuth,\\n          \\\"Content-Type\\\": \\\"application/json\\\"\\n  \
-    \      },\\n        body: JSON.stringify({\\n          count: count,\\n      \
-    \    ackmode: ackmode,\\n          encoding: \\\"auto\\\",\\n          truncate:\
-    \ 50000\\n        })\\n      });\\n      \\n      if (!res.ok) throw new Error(await\
-    \ res.text() || res.statusText);\\n      \\n      const messages = await res.json();\\\
-    n      if (messages.length === 0) {\\n        logTerminal(\\\"No messages in queue.\\\
-    \", \\\"info\\\");\\n        return;\\n      }\\n      \\n      logTerminal(`Successfully\
-    \ fetched ${messages.length} messages:`, \\\"success\\\");\\n      messages.forEach((msg,\
-    \ idx) => {\\n        const payloadStr = msg.payload;\\n        logTerminal(`<b>Message\
-    \ #${idx + 1}</b> (Routing Key: ${msg.routing_key}, Redelivered: ${msg.redelivered}):<br/><pre\
+    \ loading queues: ${err.message}`, \\\"error\\\");\\n    }\\n  }\\n\\n  // Dynamically\
+    \ load routing keys from active cluster\\n  async function loadDynamicRoutingKeys()\
+    \ {\\n    try {\\n      const res = await fetch(`${activeClusterUrl}/api/exchanges/%2F/orders-exchange/bindings/source`,\
+    \ {\\n        headers: { \\\"Authorization\\\": activeClusterAuth }\\n      });\\\
+    n      if (!res.ok) throw new Error(res.statusText);\\n      const bindings =\
+    \ await res.json();\\n      const keys = [...new Set(bindings.map(b => b.routing_key).filter(k\
+    \ => k && k !== \\\"#\\\"))];\\n      if (keys.length === 0) keys.push(\\\"orders.test\\\
+    \", \\\"orders.create\\\", \\\"orders.delete\\\");\\n\\n      const sendRoutingKeySelect\
+    \ = document.getElementById(\\\"send-routing-key\\\");\\n      if (sendRoutingKeySelect)\
+    \ {\\n        sendRoutingKeySelect.innerHTML = \\\"\\\";\\n        keys.forEach(k\
+    \ => {\\n          sendRoutingKeySelect.innerHTML += `<option value=\\\"${k}\\\
+    \">${k}</option>`;\\n        });\\n        logTerminal(`Loaded ${keys.length}\
+    \ routing keys from orders-exchange bindings.`, \\\"success\\\");\\n      }\\\
+    n    } catch (err) {\\n      logTerminal(`Error loading routing keys: ${err.message}`,\
+    \ \\\"error\\\");\\n    }\\n  }\\n\\n  window.publishMessage = async function()\
+    \ {\\n    const routingKey = document.getElementById(\\\"send-routing-key\\\"\
+    ).value;\\n    const payload = document.getElementById(\\\"send-payload\\\").value\
+    \ || \\\"Test payload\\\";\\n    logTerminal(`Sending to orders-exchange [${activeClusterName}]\
+    \ [key: ${routingKey}]...`, \\\"outgoing\\\");\\n    try {\\n      const res =\
+    \ await fetch(`${activeClusterUrl}/api/exchanges/%2F/orders-exchange/publish`,\
+    \ {\\n        method: \\\"POST\\\",\\n        headers: { \\\"Authorization\\\"\
+    : activeClusterAuth, \\\"Content-Type\\\": \\\"application/json\\\" },\\n    \
+    \    body: JSON.stringify({ properties: { delivery_mode: 2 }, routing_key: routingKey,\
+    \ payload: payload, payload_encoding: \\\"string\\\" })\\n      });\\n      if\
+    \ (!res.ok) throw new Error(await res.text() || res.statusText);\\n      const\
+    \ result = await res.json();\\n      logTerminal(result.routed ? \\\"Success!\
+    \ Message routed.\\\" : \\\"Warning: Not routed to any queue.\\\", result.routed\
+    \ ? \\\"success\\\" : \\\"warn\\\");\\n    } catch (err) {\\n      logTerminal(`Error:\
+    \ ${err.message}`, \\\"error\\\");\\n    }\\n  };\\n\\n  window.fetchMessages\
+    \ = async function() {\\n    const queue = document.getElementById(\\\"get-queue\\\
+    \").value;\\n    const count = parseInt(document.getElementById(\\\"get-count\\\
+    \").value) || 5;\\n    const requeue = document.getElementById(\\\"get-requeue\\\
+    \").checked;\\n    logTerminal(`Fetching up to ${count} msgs from ${queue} on\
+    \ ${activeClusterName}...`, \\\"outgoing\\\");\\n    try {\\n      const res =\
+    \ await fetch(`${activeClusterUrl}/api/queues/%2F/${queue}/get`, {\\n        method:\
+    \ \\\"POST\\\",\\n        headers: { \\\"Authorization\\\": activeClusterAuth,\
+    \ \\\"Content-Type\\\": \\\"application/json\\\" },\\n        body: JSON.stringify({\
+    \ count, ackmode: requeue ? \\\"ack_requeue_true\\\" : \\\"ack_requeue_false\\\
+    \", encoding: \\\"auto\\\", truncate: 50000 })\\n      });\\n      if (!res.ok)\
+    \ throw new Error(await res.text() || res.statusText);\\n      const messages\
+    \ = await res.json();\\n      if (messages.length === 0) { logTerminal(\\\"No\
+    \ messages in queue.\\\", \\\"info\\\"); return; }\\n      logTerminal(`Fetched\
+    \ ${messages.length} messages:`, \\\"success\\\");\\n      messages.forEach((msg,\
+    \ idx) => {\\n        logTerminal(`<b>Message #${idx + 1}</b> (Key: ${msg.routing_key}):<br/><pre\
     \ style=\\\"background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px;\
-    \ margin: 4px 0; color: #f1c40f;\\\">${payloadStr}</pre>`, \\\"success\\\");\\\
-    n      });\\n    } catch (err) {\\n      logTerminal(`Error fetching messages:\
-    \ ${err.message}`, \\\"error\\\");\\n    }\\n  };\\n\\n  window.confirmAndPurge\
-    \ = async function() {\\n    const cluster = document.getElementById(\\\"purge-cluster\\\
-    \").value;\\n    const queue = document.getElementById(\\\"purge-queue\\\").value;\\\
-    n    \\n    const confirmMsg = `Are you sure you want to purge (delete ALL messages\
-    \ in) queue \\\"${queue}\\\" on the ${cluster.toUpperCase()} cluster?`;\\n   \
-    \ if (!confirm(confirmMsg)) {\\n      logTerminal(\\\"Purge operation cancelled\
-    \ by user.\\\", \\\"info\\\");\\n      return;\\n    }\\n    \\n    logTerminal(`Purging\
-    \ queue \\\"${queue}\\\" on ${cluster.toUpperCase()} cluster...`, \\\"outgoing\\\
-    \");\\n    \\n    let url = \\\"\\\";\\n    let auth = \\\"\\\";\\n    if (cluster\
-    \ === \\\"prod\\\") {\\n      url = `https://prod.rmq.budd.codes/api/queues/%2F/${queue}/contents`;\\\
-    n      auth = prodAuth;\\n    } else {\\n      url = `https://dr.rmq.budd.codes/api/queues/%2F/${queue}/contents`;\\\
-    n      auth = drAuth;\\n    }\\n    \\n    try {\\n      const res = await fetch(url,\
-    \ {\\n        method: \\\"DELETE\\\",\\n        headers: {\\n          \\\"Authorization\\\
-    \": auth,\\n          \\\"Content-Type\\\": \\\"application/json\\\"\\n      \
-    \  }\\n      });\\n      \\n      if (!res.ok) throw new Error(await res.text()\
-    \ || res.statusText);\\n      \\n      logTerminal(`Success! Queue \\\"${queue}\\\
-    \" on ${cluster.toUpperCase()} has been fully purged.`, \\\"success\\\");\\n \
-    \   } catch (err) {\\n      logTerminal(`Error purging queue: ${err.message}`,\
-    \ \\\"error\\\");\\n    }\\n  };\\n\\n  // Initialize on load\\n  setTimeout(async\
-    \ () => {\\n    logTerminal(\\\"Console initialized. Discovering cluster routing\
-    \ details...\\\", \\\"info\\\");\\n    await Promise.all([loadDynamicQueues(),\
-    \ loadDynamicRoutingKeys()]);\\n    logTerminal(\\\"Dynamic discovery complete.\
-    \ Console ready.\\\", \\\"success\\\");\\n  }, 200);\\n})();\\n</script>\\n\"\
-    ,\n        \"mode\": \"html\"\n      }\n    }\n  ],\n  \"refresh\": \"\",\n  \"\
-    schemaVersion\": 39,\n  \"tags\": [\n    \"rabbitmq\"\n  ],\n  \"templating\"\
-    : {\n    \"list\": []\n  },\n  \"time\": {\n    \"from\": \"now-1h\",\n    \"\
-    to\": \"now\"\n  },\n  \"timepicker\": {},\n  \"timezone\": \"\",\n  \"title\"\
-    : \"RabbitMQ Active Cluster Message Console\",\n  \"version\": 1,\n  \"weekStart\"\
-    : \"\"\n}"
+    \ margin: 4px 0; color: #f1c40f;\\\">${msg.payload}</pre>`, \\\"success\\\");\\\
+    n      });\\n    } catch (err) {\\n      logTerminal(`Error: ${err.message}`,\
+    \ \\\"error\\\");\\n    }\\n  };\\n\\n  window.confirmAndPurge = async function()\
+    \ {\\n    const clusterKey = document.getElementById(\\\"purge-cluster\\\").value;\\\
+    n    const queue = document.getElementById(\\\"purge-queue\\\").value;\\n    if\
+    \ (!confirm(`Purge all messages in \\\"${queue}\\\" on ${clusterKey === \\\"oracle\\\
+    \" ? \\\"Oracle VM\\\" : \\\"Tencent VM\\\"}?`)) {\\n      logTerminal(\\\"Purge\
+    \ cancelled.\\\", \\\"info\\\"); return;\\n    }\\n    const url = clusterKey\
+    \ === \\\"oracle\\\"\\n      ? `https://prod.rmq.budd.codes/api/queues/%2F/${queue}/contents`\\\
+    n      : `https://dr.rmq.budd.codes/api/queues/%2F/${queue}/contents`;\\n    const\
+    \ auth = clusterKey === \\\"oracle\\\" ? oracleAuth : tencentAuth;\\n    logTerminal(`Purging\
+    \ \\\"${queue}\\\" on ${clusterKey === \\\"oracle\\\" ? \\\"Oracle VM\\\" : \\\
+    \"Tencent VM\\\"}...`, \\\"outgoing\\\");\\n    try {\\n      const res = await\
+    \ fetch(url, { method: \\\"DELETE\\\", headers: { \\\"Authorization\\\": auth,\
+    \ \\\"Content-Type\\\": \\\"application/json\\\" } });\\n      if (!res.ok) throw\
+    \ new Error(await res.text() || res.statusText);\\n      logTerminal(`Success!\
+    \ Queue \\\"${queue}\\\" purged.`, \\\"success\\\");\\n    } catch (err) {\\n\
+    \      logTerminal(`Error: ${err.message}`, \\\"error\\\");\\n    }\\n  };\\n\\\
+    n  // Initialize\\n  setTimeout(async () => {\\n    logTerminal(\\\"Console initialized.\
+    \ Detecting active cluster role...\\\", \\\"info\\\");\\n    await detectActiveCluster();\\\
+    n    await Promise.all([loadDynamicQueues(), loadDynamicRoutingKeys()]);\\n  \
+    \  logTerminal(\\\"Console ready.\\\", \\\"success\\\");\\n  }, 200);\\n})();\\\
+    n</script>\\n\",\n        \"mode\": \"html\"\n      }\n    }\n  ],\n  \"refresh\"\
+    : \"\",\n  \"schemaVersion\": 39,\n  \"tags\": [\n    \"rabbitmq\"\n  ],\n  \"\
+    templating\": {\n    \"list\": []\n  },\n  \"time\": {\n    \"from\": \"now-1h\"\
+    ,\n    \"to\": \"now\"\n  },\n  \"timepicker\": {},\n  \"timezone\": \"\",\n \
+    \ \"title\": \"RabbitMQ Active Cluster Message Console\",\n  \"version\": 1,\n\
+    \  \"weekStart\": \"\"\n}"
 kind: ConfigMap
 metadata:
   labels:
