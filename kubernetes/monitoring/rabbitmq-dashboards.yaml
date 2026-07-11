@@ -10,20 +10,21 @@ data:
     \ Nodes\",\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n\
     \        \"w\": 6,\n        \"x\": 0,\n        \"y\": 0\n      },\n      \"targets\"\
     : [\n        {\n          \"expr\": \"count(rabbitmq_identity_info{job=\\\"rabbitmq-prod\\\
-    \"})\",\n          \"instant\": true,\n          \"refId\": \"A\"\n        }\n\
-    \      ],\n      \"datasource\": {\n        \"type\": \"prometheus\",\n      \
-    \  \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\": {\n        \"defaults\"\
-    : {\n          \"color\": {\n            \"mode\": \"thresholds\"\n          },\n\
-    \          \"thresholds\": {\n            \"mode\": \"absolute\",\n          \
-    \  \"steps\": [\n              {\n                \"color\": \"red\",\n      \
-    \          \"value\": null\n              },\n              {\n              \
-    \  \"color\": \"green\",\n                \"value\": 3\n              }\n    \
-    \        ]\n          }\n        }\n      }\n    },\n    {\n      \"id\": 2,\n\
-    \      \"title\": \"Active Resource Alarms\",\n      \"type\": \"stat\",\n   \
-    \   \"gridPos\": {\n        \"h\": 4,\n        \"w\": 6,\n        \"x\": 6,\n\
-    \        \"y\": 0\n      },\n      \"targets\": [\n        {\n          \"expr\"\
-    : \"sum(rabbitmq_alarms_memory_used_watermark{job=\\\"rabbitmq-prod\\\"}) + sum(rabbitmq_alarms_free_disk_space_watermark{job=\\\
-    \"rabbitmq-prod\\\"})\",\n          \"instant\": true,\n          \"refId\": \"\
+    \",rabbitmq_endpoint=\\\"aggregated\\\"})\",\n          \"instant\": true,\n \
+    \         \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n   \
+    \     \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n \
+    \     \"fieldConfig\": {\n        \"defaults\": {\n          \"color\": {\n  \
+    \          \"mode\": \"thresholds\"\n          },\n          \"thresholds\": {\n\
+    \            \"mode\": \"absolute\",\n            \"steps\": [\n             \
+    \ {\n                \"color\": \"red\",\n                \"value\": null\n  \
+    \            },\n              {\n                \"color\": \"green\",\n    \
+    \            \"value\": 3\n              }\n            ]\n          }\n     \
+    \   }\n      }\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Active Resource\
+    \ Alarms\",\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n\
+    \        \"w\": 6,\n        \"x\": 6,\n        \"y\": 0\n      },\n      \"targets\"\
+    : [\n        {\n          \"expr\": \"sum(rabbitmq_alarms_memory_used_watermark{job=\\\
+    \"rabbitmq-prod\\\"}) + sum(rabbitmq_alarms_free_disk_space_watermark{job=\\\"\
+    rabbitmq-prod\\\"})\",\n          \"instant\": true,\n          \"refId\": \"\
     A\"\n        }\n      ],\n      \"datasource\": {\n        \"type\": \"prometheus\"\
     ,\n        \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\": {\n     \
     \   \"defaults\": {\n          \"color\": {\n            \"mode\": \"thresholds\"\
@@ -143,102 +144,103 @@ data:
     \ Nodes\",\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n\
     \        \"w\": 8,\n        \"x\": 0,\n        \"y\": 0\n      },\n      \"targets\"\
     : [\n        {\n          \"expr\": \"count(rabbitmq_identity_info{job=~\\\"rabbitmq-dr-metrics-.*\\\
-    \"})\",\n          \"instant\": true,\n          \"refId\": \"A\"\n        }\n\
-    \      ],\n      \"datasource\": {\n        \"type\": \"prometheus\",\n      \
-    \  \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\": {\n        \"defaults\"\
-    : {\n          \"color\": {\n            \"mode\": \"thresholds\"\n          },\n\
-    \          \"thresholds\": {\n            \"mode\": \"absolute\",\n          \
-    \  \"steps\": [\n              {\n                \"color\": \"red\",\n      \
-    \          \"value\": null\n              },\n              {\n              \
-    \  \"color\": \"green\",\n                \"value\": 3\n              }\n    \
-    \        ]\n          }\n        }\n      }\n    },\n    {\n      \"id\": 2,\n\
-    \      \"title\": \"Active Resource Alarms\",\n      \"type\": \"stat\",\n   \
-    \   \"gridPos\": {\n        \"h\": 4,\n        \"w\": 8,\n        \"x\": 8,\n\
-    \        \"y\": 0\n      },\n      \"targets\": [\n        {\n          \"expr\"\
-    : \"sum(rabbitmq_alarms_memory_used_watermark{job=~\\\"rabbitmq-dr-metrics-.*\\\
-    \"}) + sum(rabbitmq_alarms_free_disk_space_watermark{job=~\\\"rabbitmq-dr-metrics-.*\\\
-    \"})\",\n          \"instant\": true,\n          \"refId\": \"A\"\n        }\n\
-    \      ],\n      \"datasource\": {\n        \"type\": \"prometheus\",\n      \
-    \  \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\": {\n        \"defaults\"\
-    : {\n          \"color\": {\n            \"mode\": \"thresholds\"\n          },\n\
-    \          \"mappings\": [\n            {\n              \"type\": \"value\",\n\
-    \              \"options\": {\n                \"0\": {\n                  \"\
-    text\": \"Healthy\",\n                  \"color\": \"green\"\n               \
-    \ }\n              }\n            },\n            {\n              \"type\": \"\
-    range\",\n              \"options\": {\n                \"from\": 1,\n       \
-    \         \"to\": 99,\n                \"result\": {\n                  \"text\"\
-    : \"ALARM ACTIVE\",\n                  \"color\": \"red\"\n                }\n\
-    \              }\n            }\n          ],\n          \"thresholds\": {\n \
-    \           \"mode\": \"absolute\",\n            \"steps\": [\n              {\n\
-    \                \"color\": \"green\",\n                \"value\": null\n    \
-    \          }\n            ]\n          }\n        }\n      }\n    },\n    {\n\
-    \      \"id\": 3,\n      \"title\": \"DR Rolling Buffer Mode\",\n      \"type\"\
-    : \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n        \"w\": 8,\n    \
-    \    \"x\": 16,\n        \"y\": 0\n      },\n      \"targets\": [\n        {\n\
-    \          \"expr\": \"vector(1)\",\n          \"instant\": true,\n          \"\
+    \",rabbitmq_endpoint=\\\"aggregated\\\"})\",\n          \"instant\": true,\n \
+    \         \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n   \
+    \     \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n \
+    \     \"fieldConfig\": {\n        \"defaults\": {\n          \"color\": {\n  \
+    \          \"mode\": \"thresholds\"\n          },\n          \"thresholds\": {\n\
+    \            \"mode\": \"absolute\",\n            \"steps\": [\n             \
+    \ {\n                \"color\": \"red\",\n                \"value\": null\n  \
+    \            },\n              {\n                \"color\": \"green\",\n    \
+    \            \"value\": 3\n              }\n            ]\n          }\n     \
+    \   }\n      }\n    },\n    {\n      \"id\": 2,\n      \"title\": \"Active Resource\
+    \ Alarms\",\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n\
+    \        \"w\": 8,\n        \"x\": 8,\n        \"y\": 0\n      },\n      \"targets\"\
+    : [\n        {\n          \"expr\": \"sum(rabbitmq_alarms_memory_used_watermark{job=~\\\
+    \"rabbitmq-dr-metrics-.*\\\"}) + sum(rabbitmq_alarms_free_disk_space_watermark{job=~\\\
+    \"rabbitmq-dr-metrics-.*\\\"})\",\n          \"instant\": true,\n          \"\
     refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n        \"type\"\
     : \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\"\
     : {\n        \"defaults\": {\n          \"color\": {\n            \"mode\": \"\
     thresholds\"\n          },\n          \"mappings\": [\n            {\n       \
     \       \"type\": \"value\",\n              \"options\": {\n                \"\
-    1\": {\n                  \"text\": \"TTL 30m / 10GB Active\",\n             \
-    \     \"color\": \"green\"\n                }\n              }\n            }\n\
-    \          ],\n          \"thresholds\": {\n            \"mode\": \"absolute\"\
-    ,\n            \"steps\": [\n              {\n                \"color\": \"green\"\
-    ,\n                \"value\": null\n              }\n            ]\n         \
-    \ }\n        }\n      }\n    },\n    {\n      \"id\": 4,\n      \"title\": \"\
-    Queue Message Volumes\",\n      \"type\": \"timeseries\",\n      \"gridPos\":\
-    \ {\n        \"h\": 8,\n        \"w\": 12,\n        \"x\": 0,\n        \"y\":\
-    \ 4\n      },\n      \"targets\": [\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages_ram{job=~\\\
-    \"rabbitmq-dr-metrics-.*\\\"} + rabbitmq_detailed_queue_messages_persistent{job=~\\\
-    \"rabbitmq-dr-metrics-.*\\\"}) by (queue)\",\n          \"legendFormat\": \"{{queue}}\"\
-    ,\n          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n\
+    0\": {\n                  \"text\": \"Healthy\",\n                  \"color\"\
+    : \"green\"\n                }\n              }\n            },\n            {\n\
+    \              \"type\": \"range\",\n              \"options\": {\n          \
+    \      \"from\": 1,\n                \"to\": 99,\n                \"result\":\
+    \ {\n                  \"text\": \"ALARM ACTIVE\",\n                  \"color\"\
+    : \"red\"\n                }\n              }\n            }\n          ],\n \
+    \         \"thresholds\": {\n            \"mode\": \"absolute\",\n           \
+    \ \"steps\": [\n              {\n                \"color\": \"green\",\n     \
+    \           \"value\": null\n              }\n            ]\n          }\n   \
+    \     }\n      }\n    },\n    {\n      \"id\": 3,\n      \"title\": \"DR Rolling\
+    \ Buffer Mode\",\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"\
+    h\": 4,\n        \"w\": 8,\n        \"x\": 16,\n        \"y\": 0\n      },\n \
+    \     \"targets\": [\n        {\n          \"expr\": \"vector(1)\",\n        \
+    \  \"instant\": true,\n          \"refId\": \"A\"\n        }\n      ],\n     \
+    \ \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\
+    \n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"color\"\
+    : {\n            \"mode\": \"thresholds\"\n          },\n          \"mappings\"\
+    : [\n            {\n              \"type\": \"value\",\n              \"options\"\
+    : {\n                \"1\": {\n                  \"text\": \"TTL 30m / 10GB Active\"\
+    ,\n                  \"color\": \"green\"\n                }\n              }\n\
+    \            }\n          ],\n          \"thresholds\": {\n            \"mode\"\
+    : \"absolute\",\n            \"steps\": [\n              {\n                \"\
+    color\": \"green\",\n                \"value\": null\n              }\n      \
+    \      ]\n          }\n        }\n      }\n    },\n    {\n      \"id\": 4,\n \
+    \     \"title\": \"Queue Message Volumes\",\n      \"type\": \"timeseries\",\n\
+    \      \"gridPos\": {\n        \"h\": 8,\n        \"w\": 12,\n        \"x\": 0,\n\
+    \        \"y\": 4\n      },\n      \"targets\": [\n        {\n          \"expr\"\
+    : \"sum(rabbitmq_detailed_queue_messages_ram{job=~\\\"rabbitmq-dr-metrics-.*\\\
+    \"} + rabbitmq_detailed_queue_messages_persistent{job=~\\\"rabbitmq-dr-metrics-.*\\\
+    \"}) by (queue)\",\n          \"legendFormat\": \"{{queue}}\",\n          \"refId\"\
+    : \"A\"\n        }\n      ],\n      \"datasource\": {\n        \"type\": \"prometheus\"\
+    ,\n        \"uid\": \"prometheus\"\n      }\n    },\n    {\n      \"id\": 5,\n\
+    \      \"title\": \"Messaging Throughput (msg/sec)\",\n      \"type\": \"timeseries\"\
+    ,\n      \"gridPos\": {\n        \"h\": 8,\n        \"w\": 12,\n        \"x\"\
+    : 12,\n        \"y\": 4\n      },\n      \"targets\": [\n        {\n         \
+    \ \"expr\": \"sum(rate(rabbitmq_global_messages_received_total{job=~\\\"rabbitmq-dr-metrics-.*\\\
+    \"}[1m]))\",\n          \"legendFormat\": \"Publish Rate\",\n          \"refId\"\
+    : \"A\"\n        },\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_acknowledged_total{job=~\\\
+    \"rabbitmq-dr-metrics-.*\\\"}[1m]))\",\n          \"legendFormat\": \"Ack Rate\"\
+    ,\n          \"refId\": \"B\"\n        }\n      ],\n      \"datasource\": {\n\
     \        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n\
-    \    },\n    {\n      \"id\": 5,\n      \"title\": \"Messaging Throughput (msg/sec)\"\
-    ,\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"h\": 8,\n\
-    \        \"w\": 12,\n        \"x\": 12,\n        \"y\": 4\n      },\n      \"\
-    targets\": [\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_received_total{job=~\\\
-    \"rabbitmq-dr-metrics-.*\\\"}[1m]))\",\n          \"legendFormat\": \"Publish\
-    \ Rate\",\n          \"refId\": \"A\"\n        },\n        {\n          \"expr\"\
-    : \"sum(rate(rabbitmq_global_messages_acknowledged_total{job=~\\\"rabbitmq-dr-metrics-.*\\\
-    \"}[1m]))\",\n          \"legendFormat\": \"Ack Rate\",\n          \"refId\":\
-    \ \"B\"\n        }\n      ],\n      \"datasource\": {\n        \"type\": \"prometheus\"\
-    ,\n        \"uid\": \"prometheus\"\n      }\n    },\n    {\n      \"id\": 6,\n\
-    \      \"title\": \"Node Memory Consumption (%)\",\n      \"type\": \"bargauge\"\
-    ,\n      \"gridPos\": {\n        \"h\": 5,\n        \"w\": 12,\n        \"x\"\
-    : 0,\n        \"y\": 12\n      },\n      \"targets\": [\n        {\n         \
-    \ \"expr\": \"rabbitmq_process_resident_memory_bytes{job=~\\\"rabbitmq-dr-metrics-.*\\\
-    \"} / rabbitmq_resident_memory_limit_bytes{job=~\\\"rabbitmq-dr-metrics-.*\\\"\
-    } * 100\",\n          \"legendFormat\": \"{{job}}\",\n          \"refId\": \"\
-    A\"\n        }\n      ],\n      \"datasource\": {\n        \"type\": \"prometheus\"\
-    ,\n        \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\": {\n     \
-    \   \"defaults\": {\n          \"min\": 0,\n          \"max\": 100,\n        \
-    \  \"unit\": \"percent\",\n          \"thresholds\": {\n            \"mode\":\
-    \ \"absolute\",\n            \"steps\": [\n              {\n                \"\
-    color\": \"green\",\n                \"value\": null\n              },\n     \
-    \         {\n                \"color\": \"yellow\",\n                \"value\"\
-    : 70\n              },\n              {\n                \"color\": \"red\",\n\
-    \                \"value\": 85\n              }\n            ]\n          }\n\
-    \        }\n      },\n      \"options\": {\n        \"orientation\": \"horizontal\"\
-    \n      }\n    },\n    {\n      \"id\": 7,\n      \"title\": \"Node Available\
-    \ Disk (GB)\",\n      \"type\": \"gauge\",\n      \"gridPos\": {\n        \"h\"\
-    : 5,\n        \"w\": 12,\n        \"x\": 12,\n        \"y\": 12\n      },\n  \
-    \    \"targets\": [\n        {\n          \"expr\": \"rabbitmq_disk_space_available_bytes{job=~\\\
-    \"rabbitmq-dr-metrics-.*\\\"} / 1024 / 1024 / 1024\",\n          \"legendFormat\"\
-    : \"{{job}}\",\n          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\"\
-    : {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n    \
-    \  },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\":\
-    \ \"decbytes\",\n          \"thresholds\": {\n            \"mode\": \"absolute\"\
-    ,\n            \"steps\": [\n              {\n                \"color\": \"red\"\
-    ,\n                \"value\": null\n              },\n              {\n      \
-    \          \"color\": \"yellow\",\n                \"value\": 2\n            \
-    \  },\n              {\n                \"color\": \"green\",\n              \
-    \  \"value\": 5\n              }\n            ]\n          }\n        }\n    \
-    \  }\n    }\n  ],\n  \"refresh\": \"10s\",\n  \"schemaVersion\": 39,\n  \"tags\"\
-    : [\n    \"rabbitmq\"\n  ],\n  \"templating\": {\n    \"list\": []\n  },\n  \"\
-    time\": {\n    \"from\": \"now-1h\",\n    \"to\": \"now\"\n  },\n  \"timepicker\"\
-    : {},\n  \"timezone\": \"\",\n  \"title\": \"RabbitMQ Disaster Recovery (DR) Cluster\
-    \ Dashboard\",\n  \"version\": 1,\n  \"weekStart\": \"\"\n}"
+    \    },\n    {\n      \"id\": 6,\n      \"title\": \"Node Memory Consumption (%)\"\
+    ,\n      \"type\": \"bargauge\",\n      \"gridPos\": {\n        \"h\": 5,\n  \
+    \      \"w\": 12,\n        \"x\": 0,\n        \"y\": 12\n      },\n      \"targets\"\
+    : [\n        {\n          \"expr\": \"rabbitmq_process_resident_memory_bytes{job=~\\\
+    \"rabbitmq-dr-metrics-.*\\\"} / rabbitmq_resident_memory_limit_bytes{job=~\\\"\
+    rabbitmq-dr-metrics-.*\\\"} * 100\",\n          \"legendFormat\": \"{{job}}\"\
+    ,\n          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n\
+    \        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n\
+    \      \"fieldConfig\": {\n        \"defaults\": {\n          \"min\": 0,\n  \
+    \        \"max\": 100,\n          \"unit\": \"percent\",\n          \"thresholds\"\
+    : {\n            \"mode\": \"absolute\",\n            \"steps\": [\n         \
+    \     {\n                \"color\": \"green\",\n                \"value\": null\n\
+    \              },\n              {\n                \"color\": \"yellow\",\n \
+    \               \"value\": 70\n              },\n              {\n           \
+    \     \"color\": \"red\",\n                \"value\": 85\n              }\n  \
+    \          ]\n          }\n        }\n      },\n      \"options\": {\n       \
+    \ \"orientation\": \"horizontal\"\n      }\n    },\n    {\n      \"id\": 7,\n\
+    \      \"title\": \"Node Available Disk (GB)\",\n      \"type\": \"gauge\",\n\
+    \      \"gridPos\": {\n        \"h\": 5,\n        \"w\": 12,\n        \"x\": 12,\n\
+    \        \"y\": 12\n      },\n      \"targets\": [\n        {\n          \"expr\"\
+    : \"rabbitmq_disk_space_available_bytes{job=~\\\"rabbitmq-dr-metrics-.*\\\"} /\
+    \ 1024 / 1024 / 1024\",\n          \"legendFormat\": \"{{job}}\",\n          \"\
+    refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n        \"type\"\
+    : \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\"\
+    : {\n        \"defaults\": {\n          \"unit\": \"decbytes\",\n          \"\
+    thresholds\": {\n            \"mode\": \"absolute\",\n            \"steps\": [\n\
+    \              {\n                \"color\": \"red\",\n                \"value\"\
+    : null\n              },\n              {\n                \"color\": \"yellow\"\
+    ,\n                \"value\": 2\n              },\n              {\n         \
+    \       \"color\": \"green\",\n                \"value\": 5\n              }\n\
+    \            ]\n          }\n        }\n      }\n    }\n  ],\n  \"refresh\": \"\
+    10s\",\n  \"schemaVersion\": 39,\n  \"tags\": [\n    \"rabbitmq\"\n  ],\n  \"\
+    templating\": {\n    \"list\": []\n  },\n  \"time\": {\n    \"from\": \"now-1h\"\
+    ,\n    \"to\": \"now\"\n  },\n  \"timepicker\": {},\n  \"timezone\": \"\",\n \
+    \ \"title\": \"RabbitMQ Disaster Recovery (DR) Cluster Dashboard\",\n  \"version\"\
+    : 1,\n  \"weekStart\": \"\"\n}"
 kind: ConfigMap
 metadata:
   labels:
