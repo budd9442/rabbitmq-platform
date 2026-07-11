@@ -116,8 +116,4 @@ resource "tencentcloud_instance" "k3s_node" {
               EOF
   )
   
-  tags = {
-    env     = "dr"
-    project = "rabbitmq-platform"
-  }
 }
