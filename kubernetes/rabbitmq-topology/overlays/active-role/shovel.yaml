@@ -8,7 +8,8 @@ spec:
   rabbitmqClusterReference:
     name: rabbitmq-prod
   vhost: "/"
-  srcQueue: "replicated-queue"
-  destQueue: "replicated-queue"
+  srcExchange: "orders-exchange"
+  srcExchangeKey: "#"
+  destExchange: "orders-exchange"
   uriSecret:
     name: shovel-secrets
