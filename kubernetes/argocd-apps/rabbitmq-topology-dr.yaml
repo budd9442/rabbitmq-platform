@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: 'https://github.com/budd9442/rmq.git'
     targetRevision: HEAD
-    path: kubernetes/rabbitmq-topology/overlays/dr
+    path: kubernetes/rabbitmq-topology/overlays/passive-role
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: rabbitmq
