@@ -33,4 +33,16 @@ spec:
   durable: true
   rabbitmqClusterReference:
     name: rabbitmq-prod
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: notifications-queue
+  namespace: rabbitmq
+spec:
+  name: notifications-queue
+  type: quorum
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
 

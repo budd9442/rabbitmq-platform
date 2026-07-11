@@ -23,4 +23,17 @@ spec:
   routingKey: "orders-dlq"
   rabbitmqClusterReference:
     name: rabbitmq-prod
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata:
+  name: notifications-binding
+  namespace: rabbitmq
+spec:
+  source: orders-exchange
+  destination: notifications-queue
+  destinationType: queue
+  routingKey: "notifications.#"
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
 
