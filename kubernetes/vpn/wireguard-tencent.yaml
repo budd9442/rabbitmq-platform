@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vpn
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wireguard-config
+  namespace: vpn
+data:
+  wg0.conf: |
+    [Interface]
+    PrivateKey = 2BvO8X23mlN9ibBb50SjQKlwwJLWhnh35Y+qHGJbX1A=
+    Address = 192.168.250.2/30
+    ListenPort = 51820
+    PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+    PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+
+    [Peer]
+    PublicKey = /L7K9oSL1zkainbasrf5ygCgZq0oFV7hEzvMSRiabw4=
+    Endpoint = 140.245.55.10:51820
+    AllowedIPs = 10.0.0.0/16, 10.244.0.0/16, 10.96.0.0/16, 192.168.250.1/32
+    PersistentKeepalive = 25
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wireguard
+  namespace: vpn
+  labels:
+    app: wireguard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wireguard
+  template:
+    metadata:
+      labels:
+        app: wireguard
+    spec:
+      hostNetwork: true
+      containers:
+      - name: wireguard
+        image: linuxserver/wireguard:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PUID
+          value: "1000"
+        - name: PGID
+          value: "1000"
+        - name: TZ
+          value: "Etc/UTC"
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+            - NET_ADMIN
+            - SYS_MODULE
+        ports:
+        - containerPort: 51820
+          hostPort: 51820
+          name: wireguard-port
+          protocol: UDP
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config/wg0.conf
+          subPath: wg0.conf
+        - name: modules
+          mountPath: /lib/modules
+          readOnly: true
+      volumes:
+      - name: config-volume
+        configMap:
+          name: wireguard-config
+      - name: modules
+        hostPath:
+          path: /lib/modules
