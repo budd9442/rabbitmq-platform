@@ -182,7 +182,7 @@ data:
     \n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"color\"\
     : {\n            \"mode\": \"thresholds\"\n          },\n          \"mappings\"\
     : [\n            {\n              \"type\": \"value\",\n              \"options\"\
-    : {\n                \"1\": {\n                  \"text\": \"TTL 30m / 10GB Active\"\
+    : {\n                \"1\": {\n                  \"text\": \"TTL 3m / 10GB Active\"\
     ,\n                  \"color\": \"green\"\n                }\n              }\n\
     \            }\n          ],\n          \"thresholds\": {\n            \"mode\"\
     : \"absolute\",\n            \"steps\": [\n              {\n                \"\

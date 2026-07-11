@@ -8,7 +8,7 @@ spec:
   pattern: "^orders-queue$"
   applyTo: queues
   definition:
-    message-ttl: 1800000
+    message-ttl: 180000
     max-length-bytes: 10737418240
   rabbitmqClusterReference:
     name: rabbitmq-prod
