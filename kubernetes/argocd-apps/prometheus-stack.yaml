@@ -25,6 +25,9 @@ spec:
             existingSecret: grafana-admin-credentials
             userKey: admin-user
             passwordKey: admin-password
+          sidecar:
+            dashboards:
+              folderAnnotation: grafana_dashboard_folder
           grafana.ini:
             panels:
               disable_sanitize_html: true
