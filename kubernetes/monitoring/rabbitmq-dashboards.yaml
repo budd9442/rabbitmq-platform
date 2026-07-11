@@ -43,9 +43,9 @@ data:
     : \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n        \"w\": 6,\n    \
     \    \"x\": 12,\n        \"y\": 0\n      },\n      \"targets\": [\n        {\n\
     \          \"expr\": \"sum(rabbitmq_detailed_queue_consumers{job=\\\"rabbitmq-prod\\\
-    \",queue=\\\"replicated-queue\\\"})\",\n          \"instant\": true,\n       \
-    \   \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n        \"\
-    type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\"\
+    \",queue=~\\\"amq.gen-.*\\\"})\",\n          \"instant\": true,\n          \"\
+    refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n        \"type\"\
+    : \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\"\
     : {\n        \"defaults\": {\n          \"color\": {\n            \"mode\": \"\
     thresholds\"\n          },\n          \"mappings\": [\n            {\n       \
     \       \"type\": \"value\",\n              \"options\": {\n                \"\
