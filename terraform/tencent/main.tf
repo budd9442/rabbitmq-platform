@@ -79,7 +79,7 @@ resource "tencentcloud_instance" "k3s_node" {
   availability_zone          = var.availability_zone
   image_id                   = data.tencentcloud_images.ubuntu.images.0.image_id
   instance_type              = var.instance_type
-  system_disk_type           = "CLOUD_SSD"
+  system_disk_type           = "CLOUD_BSSD"
   system_disk_size           = 50
   key_ids                    = [tencentcloud_key_pair.key.id]
   
