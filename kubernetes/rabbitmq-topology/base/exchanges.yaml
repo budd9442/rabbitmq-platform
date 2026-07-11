@@ -1,0 +1,11 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: Exchange
+metadata:
+  name: orders-exchange
+  namespace: rabbitmq
+spec:
+  name: orders-exchange
+  type: topic
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-prod

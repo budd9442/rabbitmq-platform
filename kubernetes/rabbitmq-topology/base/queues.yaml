@@ -9,3 +9,15 @@ spec:
   durable: true
   rabbitmqClusterReference:
     name: rabbitmq-prod
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: orders-queue
+  namespace: rabbitmq
+spec:
+  name: orders-queue
+  type: quorum
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-prod

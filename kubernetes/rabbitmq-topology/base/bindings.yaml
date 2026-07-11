@@ -1,0 +1,12 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata:
+  name: orders-binding
+  namespace: rabbitmq
+spec:
+  source: orders-exchange
+  destination: orders-queue
+  destinationType: queue
+  routingKey: "orders.#"
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
