@@ -247,3 +247,158 @@ metadata:
     grafana_dashboard: '1'
   name: rabbitmq-dr-dashboard
   namespace: monitoring
+
+---
+apiVersion: v1
+data:
+  rabbitmq-console-dashboard.json: "{\n  \"annotations\": {\n    \"list\": [\n   \
+    \   {\n        \"builtIn\": 1,\n        \"datasource\": {\n          \"type\"\
+    : \"datasource\",\n          \"uid\": \"grafana\"\n        },\n        \"enable\"\
+    : true,\n        \"hide\": true,\n        \"name\": \"Annotations & Alerts\",\n\
+    \        \"type\": \"dashboard\"\n      }\n    ]\n  },\n  \"editable\": true,\n\
+    \  \"fiscalYearStartMonth\": 0,\n  \"graphTooltip\": 0,\n  \"id\": null,\n  \"\
+    links\": [],\n  \"liveNow\": false,\n  \"panels\": [\n    {\n      \"id\": 1,\n\
+    \      \"title\": \"Interactive Message Console\",\n      \"type\": \"text\",\n\
+    \      \"gridPos\": {\n        \"h\": 20,\n        \"w\": 24,\n        \"x\":\
+    \ 0,\n        \"y\": 0\n      },\n      \"datasource\": {\n        \"type\": \"\
+    datasource\",\n        \"uid\": \"grafana\"\n      },\n      \"options\": {\n\
+    \        \"content\": \"\\n<div class=\\\"console-container\\\" style=\\\"padding:\
+    \ 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,\
+    \ Arial, sans-serif; color: #e9ecef; background: rgba(18, 18, 24, 0.4); border-radius:\
+    \ 12px; border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px);\
+    \ display: flex; flex-direction: column; gap: 24px; box-shadow: 0 8px 32px 0 rgba(0,\
+    \ 0, 0, 0.37);\\\">\\n  <h2 style=\\\"margin: 0; font-size: 20px; font-weight:\
+    \ 600; color: #fff; background: linear-gradient(135deg, #f39c12, #f1c40f); -webkit-background-clip:\
+    \ text; -webkit-text-fill-color: transparent;\\\">Active Cluster Message Console</h2>\\\
+    n  \\n  <div style=\\\"display: flex; gap: 24px; flex-wrap: wrap;\\\">\\n    <!--\
+    \ Send Panel -->\\n    <div style=\\\"flex: 1; min-width: 300px; padding: 20px;\
+    \ background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255,\
+    \ 0.05); border-radius: 8px; display: flex; flex-direction: column; gap: 16px;\\\
+    \">\\n      <h3 style=\\\"margin: 0; font-size: 16px; font-weight: 500; color:\
+    \ #f39c12;\\\">Send Message to Exchange</h3>\\n      \\n      <div style=\\\"\
+    display: flex; flex-direction: column; gap: 6px;\\\">\\n        <label style=\\\
+    \"font-size: 12px; color: #8a8a93; font-weight: 500;\\\">Routing Key</label>\\\
+    n        <select id=\\\"send-routing-key\\\" style=\\\"background: rgba(0,0,0,0.5);\
+    \ border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: #fff; padding:\
+    \ 8px; font-size: 14px; outline: none; transition: border-color 0.2s;\\\">\\n\
+    \          <option value=\\\"orders.test\\\">orders.test</option>\\n         \
+    \ <option value=\\\"orders.create\\\">orders.create</option>\\n          <option\
+    \ value=\\\"orders.delete\\\">orders.delete</option>\\n        </select>\\n  \
+    \    </div>\\n      \\n      <div style=\\\"display: flex; flex-direction: column;\
+    \ gap: 6px;\\\">\\n        <label style=\\\"font-size: 12px; color: #8a8a93; font-weight:\
+    \ 500;\\\">Message Body / Payload</label>\\n        <textarea id=\\\"send-payload\\\
+    \" rows=\\\"4\\\" style=\\\"background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);\
+    \ border-radius: 4px; color: #fff; padding: 8px; font-size: 14px; outline: none;\
+    \ font-family: monospace; resize: none;\\\" placeholder='{\\\"orderId\\\": 12345,\
+    \ \\\"amount\\\": 99.99}'></textarea>\\n      </div>\\n      \\n      <button\
+    \ onclick=\\\"publishMessage()\\\" style=\\\"background: linear-gradient(135deg,\
+    \ #f39c12, #e67e22); border: none; border-radius: 4px; color: #fff; padding: 10px;\
+    \ font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;\
+    \ display: flex; justify-content: center; align-items: center;\\\" onmouseover=\\\
+    \"this.style.opacity=0.9\\\" onmouseout=\\\"this.style.opacity=1.0\\\">Publish\
+    \ Message</button>\\n    </div>\\n\\n    <!-- Get Panel -->\\n    <div style=\\\
+    \"flex: 1; min-width: 300px; padding: 20px; background: rgba(255, 255, 255, 0.03);\
+    \ border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; display: flex;\
+    \ flex-direction: column; gap: 16px;\\\">\\n      <h3 style=\\\"margin: 0; font-size:\
+    \ 16px; font-weight: 500; color: #2ecc71;\\\">Receive Messages from Queue</h3>\\\
+    n      \\n      <div style=\\\"display: flex; flex-direction: column; gap: 6px;\\\
+    \">\\n        <label style=\\\"font-size: 12px; color: #8a8a93; font-weight: 500;\\\
+    \">Target Queue</label>\\n        <select id=\\\"get-queue\\\" style=\\\"background:\
+    \ rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px;\
+    \ color: #fff; padding: 8px; font-size: 14px; outline: none;\\\">\\n         \
+    \ <option value=\\\"orders-queue\\\">orders-queue</option>\\n          <option\
+    \ value=\\\"replicated-queue\\\">replicated-queue</option>\\n          <option\
+    \ value=\\\"orders-dlq\\\">orders-dlq</option>\\n        </select>\\n      </div>\\\
+    n\\n      <div style=\\\"display: flex; gap: 16px;\\\">\\n        <div style=\\\
+    \"flex: 1; display: flex; flex-direction: column; gap: 6px;\\\">\\n          <label\
+    \ style=\\\"font-size: 12px; color: #8a8a93; font-weight: 500;\\\">Count</label>\\\
+    n          <input id=\\\"get-count\\\" type=\\\"number\\\" value=\\\"5\\\" min=\\\
+    \"1\\\" max=\\\"100\\\" style=\\\"background: rgba(0,0,0,0.5); border: 1px solid\
+    \ rgba(255,255,255,0.1); border-radius: 4px; color: #fff; padding: 8px; font-size:\
+    \ 14px; outline: none;\\\" />\\n        </div>\\n        <div style=\\\"flex:\
+    \ 1; display: flex; align-items: center; gap: 8px; margin-top: 22px;\\\">\\n \
+    \         <input id=\\\"get-requeue\\\" type=\\\"checkbox\\\" checked style=\\\
+    \"width: 16px; height: 16px; accent-color: #2ecc71;\\\" />\\n          <label\
+    \ style=\\\"font-size: 12px; color: #e9ecef; font-weight: 500; cursor: pointer;\\\
+    \" for=\\\"get-requeue\\\">Requeue Messages</label>\\n        </div>\\n      </div>\\\
+    n      \\n      <button onclick=\\\"fetchMessages()\\\" style=\\\"background:\
+    \ linear-gradient(135deg, #2ecc71, #27ae60); border: none; border-radius: 4px;\
+    \ color: #fff; padding: 10px; font-size: 14px; font-weight: 600; cursor: pointer;\
+    \ transition: opacity 0.2s;\\\" onmouseover=\\\"this.style.opacity=0.9\\\" onmouseout=\\\
+    \"this.style.opacity=1.0\\\">Fetch Messages</button>\\n    </div>\\n  </div>\\\
+    n\\n  <!-- Terminal Output -->\\n  <div style=\\\"display: flex; flex-direction:\
+    \ column; gap: 8px;\\\">\\n    <div style=\\\"display: flex; justify-content:\
+    \ space-between; align-items: center;\\\">\\n      <h3 style=\\\"margin: 0; font-size:\
+    \ 14px; font-weight: 500; color: #9b59b6;\\\">Console Log</h3>\\n      <button\
+    \ onclick=\\\"document.getElementById('console-terminal').innerHTML=''\\\" style=\\\
+    \"background: transparent; border: 1px solid rgba(255,255,255,0.2); border-radius:\
+    \ 4px; color: #8a8a93; padding: 4px 8px; font-size: 11px; cursor: pointer; transition:\
+    \ all 0.2s;\\\" onmouseover=\\\"this.style.borderColor='#fff'; this.style.color='#fff'\\\
+    \" onmouseout=\\\"this.style.borderColor='rgba(255,255,255,0.2)'; this.style.color='#8a8a93'\\\
+    \">Clear</button>\\n    </div>\\n    <div id=\\\"console-terminal\\\" style=\\\
+    \"background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.05); border-radius:\
+    \ 6px; padding: 12px; height: 250px; overflow-y: auto; font-family: monospace;\
+    \ font-size: 12px; line-height: 1.5; color: #a9b7c6; display: flex; flex-direction:\
+    \ column; gap: 8px;\\\"></div>\\n  </div>\\n</div>\\n\\n<script>\\n(() => {\\\
+    n  const rmqUser = \\\"default_user_13Qp-YqLoEUls5c90BG\\\";\\n  const rmqPass\
+    \ = \\\"xaVG_xlcFzAfR8IWEYT6euzjFsLKLoYA\\\";\\n  const authHeader = \\\"Basic\
+    \ \\\" + btoa(rmqUser + \\\":\\\" + rmqPass);\\n\\n  window.logTerminal = function(message,\
+    \ type = \\\"info\\\") {\\n    const term = document.getElementById(\\\"console-terminal\\\
+    \");\\n    if (!term) return;\\n    const log = document.createElement(\\\"div\\\
+    \");\\n    const time = new Date().toLocaleTimeString();\\n    let color = \\\"\
+    #a9b7c6\\\";\\n    if (type === \\\"success\\\") color = \\\"#2ecc71\\\";\\n \
+    \   if (type === \\\"error\\\") color = \\\"#e74c3c\\\";\\n    if (type === \\\
+    \"outgoing\\\") color = \\\"#3498db\\\";\\n    \\n    log.style.color = color;\\\
+    n    log.innerHTML = `<span style=\\\"color: #6a8759;\\\">[${time}]</span> ${message}`;\\\
+    n    term.appendChild(log);\\n    term.scrollTop = term.scrollHeight;\\n  };\\\
+    n\\n  window.publishMessage = async function() {\\n    const routingKey = document.getElementById(\\\
+    \"send-routing-key\\\").value;\\n    const payload = document.getElementById(\\\
+    \"send-payload\\\").value || \\\"Test payload\\\";\\n    \\n    logTerminal(`Sending\
+    \ message to exchange orders-exchange [routing_key: ${routingKey}]...`, \\\"outgoing\\\
+    \");\\n    \\n    try {\\n      const res = await fetch(\\\"https://prod.rmq.budd.codes/api/exchanges/%2F/orders-exchange/publish\\\
+    \", {\\n        method: \\\"POST\\\",\\n        headers: {\\n          \\\"Authorization\\\
+    \": authHeader,\\n          \\\"Content-Type\\\": \\\"application/json\\\"\\n\
+    \        },\\n        body: JSON.stringify({\\n          properties: { delivery_mode:\
+    \ 2 },\\n          routing_key: routingKey,\\n          payload: payload,\\n \
+    \         payload_encoding: \\\"string\\\"\\n        })\\n      });\\n      \\\
+    n      if (!res.ok) throw new Error(await res.text() || res.statusText);\\n  \
+    \    \\n      const result = await res.json();\\n      if (result.routed) {\\\
+    n        logTerminal(`Success! Message routed successfully.`, \\\"success\\\"\
+    );\\n      } else {\\n        logTerminal(`Warning: Message published but was\
+    \ not routed to any queues.`, \\\"error\\\");\\n      }\\n    } catch (err) {\\\
+    n      logTerminal(`Error publishing message: ${err.message}`, \\\"error\\\");\\\
+    n    }\\n  };\\n\\n  window.fetchMessages = async function() {\\n    const queue\
+    \ = document.getElementById(\\\"get-queue\\\").value;\\n    const count = parseInt(document.getElementById(\\\
+    \"get-count\\\").value) || 5;\\n    const requeue = document.getElementById(\\\
+    \"get-requeue\\\").checked;\\n    const ackmode = requeue ? \\\"ack_requeue_true\\\
+    \" : \\\"ack_requeue_false\\\";\\n    \\n    logTerminal(`Fetching up to ${count}\
+    \ messages from queue ${queue} (requeue: ${requeue})...`, \\\"outgoing\\\");\\\
+    n    \\n    try {\\n      const res = await fetch(`https://prod.rmq.budd.codes/api/queues/%2F/${queue}/get`,\
+    \ {\\n        method: \\\"POST\\\",\\n        headers: {\\n          \\\"Authorization\\\
+    \": authHeader,\\n          \\\"Content-Type\\\": \\\"application/json\\\"\\n\
+    \        },\\n        body: JSON.stringify({\\n          count: count,\\n    \
+    \      ackmode: ackmode,\\n          encoding: \\\"auto\\\",\\n          truncate:\
+    \ 50000\\n        })\\n      });\\n      \\n      if (!res.ok) throw new Error(await\
+    \ res.text() || res.statusText);\\n      \\n      const messages = await res.json();\\\
+    n      if (messages.length === 0) {\\n        logTerminal(\\\"No messages in queue.\\\
+    \", \\\"info\\\");\\n        return;\\n      }\\n      \\n      logTerminal(`Successfully\
+    \ fetched ${messages.length} messages:`, \\\"success\\\");\\n      messages.forEach((msg,\
+    \ idx) => {\\n        const payloadStr = msg.payload;\\n        logTerminal(`<b>Message\
+    \ #${idx + 1}</b> (Routing Key: ${msg.routing_key}, Redelivered: ${msg.redelivered}):<br/><pre\
+    \ style=\\\"background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px;\
+    \ margin: 4px 0; color: #f1c40f;\\\">${payloadStr}</pre>`, \\\"success\\\");\\\
+    n      });\\n    } catch (err) {\\n      logTerminal(`Error fetching messages:\
+    \ ${err.message}`, \\\"error\\\");\\n    }\\n  };\\n\\n  setTimeout(() => logTerminal(\\\
+    \"Console initialized. Ready to send/receive messages.\\\", \\\"success\\\"),\
+    \ 200);\\n})();\\n</script>\\n\",\n        \"mode\": \"html\"\n      }\n    }\n\
+    \  ],\n  \"refresh\": \"\",\n  \"schemaVersion\": 39,\n  \"tags\": [\n    \"rabbitmq\"\
+    \n  ],\n  \"templating\": {\n    \"list\": []\n  },\n  \"time\": {\n    \"from\"\
+    : \"now-1h\",\n    \"to\": \"now\"\n  },\n  \"timepicker\": {},\n  \"timezone\"\
+    : \"\",\n  \"title\": \"RabbitMQ Active Cluster Message Console\",\n  \"version\"\
+    : 1,\n  \"weekStart\": \"\"\n}"
+kind: ConfigMap
+metadata:
+  labels:
+    grafana_dashboard: '1'
+  name: rabbitmq-console-dashboard
+  namespace: monitoring
