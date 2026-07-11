@@ -21,6 +21,9 @@ spec:
                 cpu: 500m
                 memory: 1Gi
         grafana:
+          grafana.ini:
+            panels:
+              disable_sanitize_html: true
           resources:
             requests:
               cpu: 50m
