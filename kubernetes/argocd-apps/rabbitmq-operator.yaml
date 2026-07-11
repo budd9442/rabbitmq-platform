@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/budd9442/rabbitmq-platform.git'
+    repoURL: 'https://github.com/budd9442/rmq.git'
     targetRevision: HEAD
     path: kubernetes/rabbitmq-operator
   destination:
