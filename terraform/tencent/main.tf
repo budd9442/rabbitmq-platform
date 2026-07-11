@@ -92,7 +92,7 @@ resource "tencentcloud_instance" "k3s_node" {
   internet_max_bandwidth_out = 100
   internet_charge_type       = "TRAFFIC_POSTPAID_BY_HOUR" # Pay-by-traffic to keep idle costs minimal
   
-  security_groups            = [tencentcloud_security_group.sg.id]
+  orderly_security_groups    = [tencentcloud_security_group.sg.id]
   
   user_data = base64encode(<<-EOF
               #!/bin/bash
@@ -117,7 +117,7 @@ resource "tencentcloud_instance" "k3s_node" {
   )
   
   tags = {
-    Environment = "DR"
-    Project     = "RabbitMQ-Platform"
+    env     = "dr"
+    project = "rabbitmq-platform"
   }
 }
