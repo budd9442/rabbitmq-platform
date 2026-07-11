@@ -1,0 +1,32 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: rabbitmq-prod
+  namespace: rabbitmq
+spec:
+  replicas: 3
+  resources:
+    requests:
+      cpu: "2"
+      memory: "4Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  persistence:
+    storageClassName: "local-path"
+    storage: "10Gi"
+  rabbitmq:
+    additionalConfig: |
+      # Enforce all queues to default to Quorum Queues
+      default_queue_type = quorum
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: rabbitmq-prod-pdb
+  namespace: rabbitmq
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rabbitmq-prod
