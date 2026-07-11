@@ -28,6 +28,8 @@ spec:
           sidecar:
             dashboards:
               folderAnnotation: grafana_dashboard_folder
+              provider:
+                foldersFromFilesStructure: true
           grafana.ini:
             panels:
               disable_sanitize_html: true
