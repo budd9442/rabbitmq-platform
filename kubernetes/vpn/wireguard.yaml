@@ -12,12 +12,11 @@ data:
     PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
     PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
 
-    # Peer configuration for Tencent Cloud (to be completed when credentials are ready)
-    # [Peer]
-    # PublicKey = <Tencent_Public_Key>
-    # Endpoint = <Tencent_Public_IP>:51820
-    # AllowedIPs = 10.1.0.0/16, 10.245.0.0/16, 10.97.0.0/16, 192.168.250.2/32
-    # PersistentKeepalive = 25
+    [Peer]
+    PublicKey = I6J/ohXlu9g4kqq/hONHnYQFkLsidTTUCb7KluEVAkc=
+    Endpoint = 43.173.6.97:51820
+    AllowedIPs = 10.1.0.0/16, 10.245.0.0/16, 10.97.0.0/16, 192.168.250.2/32
+    PersistentKeepalive = 25
 ---
 apiVersion: apps/v1
 kind: Deployment
