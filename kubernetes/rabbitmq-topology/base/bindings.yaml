@@ -10,3 +10,17 @@ spec:
   routingKey: "orders.#"
   rabbitmqClusterReference:
     name: rabbitmq-prod
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata:
+  name: orders-dlq-binding
+  namespace: rabbitmq
+spec:
+  source: orders-dlx
+  destination: orders-dlq
+  destinationType: queue
+  routingKey: "orders-dlq"
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
+

@@ -9,3 +9,16 @@ spec:
   durable: true
   rabbitmqClusterReference:
     name: rabbitmq-prod
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Exchange
+metadata:
+  name: orders-dlx
+  namespace: rabbitmq
+spec:
+  name: orders-dlx
+  type: direct
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
+

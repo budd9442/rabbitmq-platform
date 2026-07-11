@@ -2,3 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
 - ../../base
+- policy-orders-passive.yaml
+# FAILOVER PROMOTION: To activate DR, comment the passive policy line above and uncomment the active policy line below:
+# - policy-orders-active.yaml
+

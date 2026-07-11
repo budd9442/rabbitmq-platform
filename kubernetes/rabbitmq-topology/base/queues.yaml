@@ -21,3 +21,16 @@ spec:
   durable: true
   rabbitmqClusterReference:
     name: rabbitmq-prod
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: orders-dlq
+  namespace: rabbitmq
+spec:
+  name: orders-dlq
+  type: quorum
+  durable: true
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
+

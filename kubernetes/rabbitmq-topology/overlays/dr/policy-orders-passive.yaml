@@ -1,0 +1,14 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: Policy
+metadata:
+  name: orders-policy
+  namespace: rabbitmq
+spec:
+  name: orders-policy
+  pattern: "^orders-queue$"
+  applyTo: queues
+  definition:
+    message-ttl: 1800000
+    max-length-bytes: 10737418240
+  rabbitmqClusterReference:
+    name: rabbitmq-prod
