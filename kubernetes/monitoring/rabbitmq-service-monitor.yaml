@@ -10,6 +10,13 @@ spec:
   - port: prometheus
     path: /metrics
     interval: 15s
+  - port: prometheus
+    path: /metrics/detailed
+    interval: 15s
+    params:
+      family:
+      - queue_coordination
+      - queue_metrics
   selector:
     matchLabels:
       app.kubernetes.io/part-of: rabbitmq

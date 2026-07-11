@@ -41,55 +41,54 @@ data:
     \ {\n      \"id\": 3,\n      \"title\": \"Replication Shovel\",\n      \"type\"\
     : \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n        \"w\": 6,\n    \
     \    \"x\": 12,\n        \"y\": 0\n      },\n      \"targets\": [\n        {\n\
-    \          \"expr\": \"rabbitmq_queue_consumers{job=\\\"rabbitmq-prod\\\",queue=\\\
-    \"replicated-queue\\\"}\",\n          \"instant\": true,\n          \"refId\"\
-    : \"A\"\n        }\n      ],\n      \"datasource\": {\n        \"type\": \"prometheus\"\
-    ,\n        \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\": {\n     \
-    \   \"defaults\": {\n          \"color\": {\n            \"mode\": \"thresholds\"\
-    \n          },\n          \"mappings\": [\n            {\n              \"type\"\
-    : \"value\",\n              \"options\": {\n                \"0\": {\n       \
-    \           \"text\": \"Stopped\",\n                  \"color\": \"red\"\n   \
-    \             }\n              }\n            },\n            {\n            \
-    \  \"type\": \"range\",\n              \"options\": {\n                \"from\"\
-    : 1,\n                \"to\": 99,\n                \"result\": {\n           \
-    \       \"text\": \"Running\",\n                  \"color\": \"green\"\n     \
-    \           }\n              }\n            }\n          ],\n          \"thresholds\"\
-    : {\n            \"mode\": \"absolute\",\n            \"steps\": [\n         \
-    \     {\n                \"color\": \"red\",\n                \"value\": null\n\
-    \              }\n            ]\n          }\n        }\n      }\n    },\n   \
-    \ {\n      \"id\": 4,\n      \"title\": \"Orders DLQ Volume\",\n      \"type\"\
-    : \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n        \"w\": 6,\n    \
-    \    \"x\": 18,\n        \"y\": 0\n      },\n      \"targets\": [\n        {\n\
-    \          \"expr\": \"rabbitmq_queue_messages{job=\\\"rabbitmq-prod\\\",queue=\\\
-    \"orders-dlq\\\"}\",\n          \"instant\": true,\n          \"refId\": \"A\"\
-    \n        }\n      ],\n      \"datasource\": {\n        \"type\": \"prometheus\"\
-    ,\n        \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\": {\n     \
-    \   \"defaults\": {\n          \"color\": {\n            \"mode\": \"thresholds\"\
-    \n          },\n          \"thresholds\": {\n            \"mode\": \"absolute\"\
-    ,\n            \"steps\": [\n              {\n                \"color\": \"green\"\
-    ,\n                \"value\": null\n              },\n              {\n      \
-    \          \"color\": \"red\",\n                \"value\": 1\n              }\n\
-    \            ]\n          }\n        }\n      }\n    },\n    {\n      \"id\":\
-    \ 5,\n      \"title\": \"Queue Message Volumes\",\n      \"type\": \"timeseries\"\
-    ,\n      \"gridPos\": {\n        \"h\": 8,\n        \"w\": 12,\n        \"x\"\
-    : 0,\n        \"y\": 4\n      },\n      \"targets\": [\n        {\n          \"\
-    expr\": \"rabbitmq_queue_messages{job=\\\"rabbitmq-prod\\\",queue=\\\"replicated-queue\\\
-    \"}\",\n          \"legendFormat\": \"replicated-queue\",\n          \"refId\"\
-    : \"A\"\n        },\n        {\n          \"expr\": \"rabbitmq_queue_messages{job=\\\
-    \"rabbitmq-prod\\\",queue=\\\"orders-queue\\\"}\",\n          \"legendFormat\"\
-    : \"orders-queue\",\n          \"refId\": \"B\"\n        },\n        {\n     \
-    \     \"expr\": \"rabbitmq_queue_messages{job=\\\"rabbitmq-prod\\\",queue=\\\"\
-    orders-dlq\\\"}\",\n          \"legendFormat\": \"orders-dlq\",\n          \"\
-    refId\": \"C\"\n        }\n      ],\n      \"datasource\": {\n        \"type\"\
-    : \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n    },\n    {\n \
-    \     \"id\": 6,\n      \"title\": \"Messaging Throughput (msg/sec)\",\n     \
-    \ \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"h\": 8,\n       \
-    \ \"w\": 12,\n        \"x\": 12,\n        \"y\": 4\n      },\n      \"targets\"\
-    : [\n        {\n          \"expr\": \"sum(rate(rabbitmq_queue_messages_published_total{job=\\\
-    \"rabbitmq-prod\\\"}[1m])) by (queue)\",\n          \"legendFormat\": \"Publish:\
-    \ {{queue}}\",\n          \"refId\": \"A\"\n        },\n        {\n          \"\
-    expr\": \"sum(rate(rabbitmq_queue_messages_acked_total{job=\\\"rabbitmq-prod\\\
-    \"}[1m])) by (queue)\",\n          \"legendFormat\": \"Ack: {{queue}}\",\n   \
+    \          \"expr\": \"sum(rabbitmq_detailed_queue_consumers{job=\\\"rabbitmq-prod\\\
+    \",queue=\\\"replicated-queue\\\"})\",\n          \"instant\": true,\n       \
+    \   \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n        \"\
+    type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\"\
+    : {\n        \"defaults\": {\n          \"color\": {\n            \"mode\": \"\
+    thresholds\"\n          },\n          \"mappings\": [\n            {\n       \
+    \       \"type\": \"value\",\n              \"options\": {\n                \"\
+    0\": {\n                  \"text\": \"Stopped\",\n                  \"color\"\
+    : \"red\"\n                }\n              }\n            },\n            {\n\
+    \              \"type\": \"range\",\n              \"options\": {\n          \
+    \      \"from\": 1,\n                \"to\": 99,\n                \"result\":\
+    \ {\n                  \"text\": \"Running\",\n                  \"color\": \"\
+    green\"\n                }\n              }\n            }\n          ],\n   \
+    \       \"thresholds\": {\n            \"mode\": \"absolute\",\n            \"\
+    steps\": [\n              {\n                \"color\": \"red\",\n           \
+    \     \"value\": null\n              }\n            ]\n          }\n        }\n\
+    \      }\n    },\n    {\n      \"id\": 4,\n      \"title\": \"Orders DLQ Volume\"\
+    ,\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n      \
+    \  \"w\": 6,\n        \"x\": 18,\n        \"y\": 0\n      },\n      \"targets\"\
+    : [\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\
+    \"rabbitmq-prod\\\",queue=\\\"orders-dlq\\\"})\",\n          \"instant\": true,\n\
+    \          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n  \
+    \      \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n\
+    \      \"fieldConfig\": {\n        \"defaults\": {\n          \"color\": {\n \
+    \           \"mode\": \"thresholds\"\n          },\n          \"thresholds\":\
+    \ {\n            \"mode\": \"absolute\",\n            \"steps\": [\n         \
+    \     {\n                \"color\": \"green\",\n                \"value\": null\n\
+    \              },\n              {\n                \"color\": \"red\",\n    \
+    \            \"value\": 1\n              }\n            ]\n          }\n     \
+    \   }\n      }\n    },\n    {\n      \"id\": 5,\n      \"title\": \"Queue Message\
+    \ Volumes\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"\
+    h\": 8,\n        \"w\": 12,\n        \"x\": 0,\n        \"y\": 4\n      },\n \
+    \     \"targets\": [\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\
+    \"rabbitmq-prod\\\",queue=\\\"replicated-queue\\\"})\",\n          \"legendFormat\"\
+    : \"replicated-queue\",\n          \"refId\": \"A\"\n        },\n        {\n \
+    \         \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\"rabbitmq-prod\\\
+    \",queue=\\\"orders-queue\\\"})\",\n          \"legendFormat\": \"orders-queue\"\
+    ,\n          \"refId\": \"B\"\n        },\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\
+    \"rabbitmq-prod\\\",queue=\\\"orders-dlq\\\"})\",\n          \"legendFormat\"\
+    : \"orders-dlq\",\n          \"refId\": \"C\"\n        }\n      ],\n      \"datasource\"\
+    : {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n    \
+    \  }\n    },\n    {\n      \"id\": 6,\n      \"title\": \"Messaging Throughput\
+    \ (msg/sec)\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n      \
+    \  \"h\": 8,\n        \"w\": 12,\n        \"x\": 12,\n        \"y\": 4\n     \
+    \ },\n      \"targets\": [\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_received_total{job=\\\
+    \"rabbitmq-prod\\\"}[1m]))\",\n          \"legendFormat\": \"Publish Rate\",\n\
+    \          \"refId\": \"A\"\n        },\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_acknowledged_total{job=\\\
+    \"rabbitmq-prod\\\"}[1m]))\",\n          \"legendFormat\": \"Ack Rate\",\n   \
     \       \"refId\": \"B\"\n        }\n      ],\n      \"datasource\": {\n     \
     \   \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n    },\n\
     \    {\n      \"id\": 7,\n      \"title\": \"Node Memory Consumption (%)\",\n\
@@ -193,32 +192,31 @@ data:
     \ }\n        }\n      }\n    },\n    {\n      \"id\": 4,\n      \"title\": \"\
     Queue Message Volumes\",\n      \"type\": \"timeseries\",\n      \"gridPos\":\
     \ {\n        \"h\": 8,\n        \"w\": 12,\n        \"x\": 0,\n        \"y\":\
-    \ 4\n      },\n      \"targets\": [\n        {\n          \"expr\": \"rabbitmq_queue_messages{job=\\\
-    \"rabbitmq-dr-metrics\\\",queue=\\\"replicated-queue\\\"}\",\n          \"legendFormat\"\
+    \ 4\n      },\n      \"targets\": [\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\
+    \"rabbitmq-dr-metrics\\\",queue=\\\"replicated-queue\\\"})\",\n          \"legendFormat\"\
     : \"replicated-queue\",\n          \"refId\": \"A\"\n        },\n        {\n \
-    \         \"expr\": \"rabbitmq_queue_messages{job=\\\"rabbitmq-dr-metrics\\\"\
-    ,queue=\\\"orders-queue\\\"}\",\n          \"legendFormat\": \"orders-queue\"\
-    ,\n          \"refId\": \"B\"\n        },\n        {\n          \"expr\": \"rabbitmq_queue_messages{job=\\\
-    \"rabbitmq-dr-metrics\\\",queue=\\\"orders-dlq\\\"}\",\n          \"legendFormat\"\
+    \         \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\"rabbitmq-dr-metrics\\\
+    \",queue=\\\"orders-queue\\\"})\",\n          \"legendFormat\": \"orders-queue\"\
+    ,\n          \"refId\": \"B\"\n        },\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\
+    \"rabbitmq-dr-metrics\\\",queue=\\\"orders-dlq\\\"})\",\n          \"legendFormat\"\
     : \"orders-dlq\",\n          \"refId\": \"C\"\n        }\n      ],\n      \"datasource\"\
     : {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n    \
     \  }\n    },\n    {\n      \"id\": 5,\n      \"title\": \"Messaging Throughput\
     \ (msg/sec)\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n      \
     \  \"h\": 8,\n        \"w\": 12,\n        \"x\": 12,\n        \"y\": 4\n     \
-    \ },\n      \"targets\": [\n        {\n          \"expr\": \"sum(rate(rabbitmq_queue_messages_published_total{job=\\\
-    \"rabbitmq-dr-metrics\\\"}[1m])) by (queue)\",\n          \"legendFormat\": \"\
-    Publish: {{queue}}\",\n          \"refId\": \"A\"\n        },\n        {\n   \
-    \       \"expr\": \"sum(rate(rabbitmq_queue_messages_acked_total{job=\\\"rabbitmq-dr-metrics\\\
-    \"}[1m])) by (queue)\",\n          \"legendFormat\": \"Ack: {{queue}}\",\n   \
-    \       \"refId\": \"B\"\n        }\n      ],\n      \"datasource\": {\n     \
-    \   \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n    },\n\
-    \    {\n      \"id\": 6,\n      \"title\": \"Node Memory Consumption (%)\",\n\
-    \      \"type\": \"bargauge\",\n      \"gridPos\": {\n        \"h\": 5,\n    \
-    \    \"w\": 12,\n        \"x\": 0,\n        \"y\": 12\n      },\n      \"targets\"\
+    \ },\n      \"targets\": [\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_received_total{job=\\\
+    \"rabbitmq-dr-metrics\\\"}[1m]))\",\n          \"legendFormat\": \"Publish Rate\"\
+    ,\n          \"refId\": \"A\"\n        },\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_acknowledged_total{job=\\\
+    \"rabbitmq-dr-metrics\\\"}[1m]))\",\n          \"legendFormat\": \"Ack Rate\"\
+    ,\n          \"refId\": \"B\"\n        }\n      ],\n      \"datasource\": {\n\
+    \        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n\
+    \    },\n    {\n      \"id\": 6,\n      \"title\": \"Node Memory Consumption (%)\"\
+    ,\n      \"type\": \"bargauge\",\n      \"gridPos\": {\n        \"h\": 5,\n  \
+    \      \"w\": 12,\n        \"x\": 0,\n        \"y\": 12\n      },\n      \"targets\"\
     : [\n        {\n          \"expr\": \"rabbitmq_process_resident_memory_bytes{job=\\\
     \"rabbitmq-dr-metrics\\\"} / rabbitmq_resident_memory_limit_bytes{job=\\\"rabbitmq-dr-metrics\\\
-    \"} * 100\",\n          \"legendFormat\": \"{{pod}}\",\n          \"refId\": \"\
-    A\"\n        }\n      ],\n      \"datasource\": {\n        \"type\": \"prometheus\"\
+    \"} * 100\",\n          \"legendFormat\": \"{{instance}}\",\n          \"refId\"\
+    : \"A\"\n        }\n      ],\n      \"datasource\": {\n        \"type\": \"prometheus\"\
     ,\n        \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\": {\n     \
     \   \"defaults\": {\n          \"min\": 0,\n          \"max\": 100,\n        \
     \  \"unit\": \"percent\",\n          \"thresholds\": {\n            \"mode\":\
@@ -233,10 +231,10 @@ data:
     : 5,\n        \"w\": 12,\n        \"x\": 12,\n        \"y\": 12\n      },\n  \
     \    \"targets\": [\n        {\n          \"expr\": \"rabbitmq_disk_space_available_bytes{job=\\\
     \"rabbitmq-dr-metrics\\\"} / 1024 / 1024 / 1024\",\n          \"legendFormat\"\
-    : \"{{pod}}\",\n          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\"\
-    : {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n    \
-    \  },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\":\
-    \ \"decbytes\",\n          \"thresholds\": {\n            \"mode\": \"absolute\"\
+    : \"{{instance}}\",\n          \"refId\": \"A\"\n        }\n      ],\n      \"\
+    datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\
+    \n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\"\
+    : \"decbytes\",\n          \"thresholds\": {\n            \"mode\": \"absolute\"\
     ,\n            \"steps\": [\n              {\n                \"color\": \"red\"\
     ,\n                \"value\": null\n              },\n              {\n      \
     \          \"color\": \"yellow\",\n                \"value\": 2\n            \
