@@ -60,7 +60,8 @@ data:
     \      }\n    },\n    {\n      \"id\": 4,\n      \"title\": \"Orders DLQ Volume\"\
     ,\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n      \
     \  \"w\": 6,\n        \"x\": 18,\n        \"y\": 0\n      },\n      \"targets\"\
-    : [\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\
+    : [\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages_ram{job=\\\
+    \"rabbitmq-prod\\\",queue=\\\"orders-dlq\\\"} + rabbitmq_detailed_queue_messages_persistent{job=\\\
     \"rabbitmq-prod\\\",queue=\\\"orders-dlq\\\"})\",\n          \"instant\": true,\n\
     \          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n  \
     \      \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n\
@@ -73,16 +74,17 @@ data:
     \   }\n      }\n    },\n    {\n      \"id\": 5,\n      \"title\": \"Queue Message\
     \ Volumes\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"\
     h\": 8,\n        \"w\": 12,\n        \"x\": 0,\n        \"y\": 4\n      },\n \
-    \     \"targets\": [\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\
-    \"rabbitmq-prod\\\"}) by (queue)\",\n          \"legendFormat\": \"{{queue}}\"\
-    ,\n          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n\
-    \        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n\
-    \    },\n    {\n      \"id\": 6,\n      \"title\": \"Messaging Throughput (msg/sec)\"\
-    ,\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"h\": 8,\n\
-    \        \"w\": 12,\n        \"x\": 12,\n        \"y\": 4\n      },\n      \"\
-    targets\": [\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_received_total{job=\\\
-    \"rabbitmq-prod\\\"}[1m]))\",\n          \"legendFormat\": \"Publish Rate\",\n\
-    \          \"refId\": \"A\"\n        },\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_acknowledged_total{job=\\\
+    \     \"targets\": [\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages_ram{job=\\\
+    \"rabbitmq-prod\\\"} + rabbitmq_detailed_queue_messages_persistent{job=\\\"rabbitmq-prod\\\
+    \"}) by (queue)\",\n          \"legendFormat\": \"{{queue}}\",\n          \"refId\"\
+    : \"A\"\n        }\n      ],\n      \"datasource\": {\n        \"type\": \"prometheus\"\
+    ,\n        \"uid\": \"prometheus\"\n      }\n    },\n    {\n      \"id\": 6,\n\
+    \      \"title\": \"Messaging Throughput (msg/sec)\",\n      \"type\": \"timeseries\"\
+    ,\n      \"gridPos\": {\n        \"h\": 8,\n        \"w\": 12,\n        \"x\"\
+    : 12,\n        \"y\": 4\n      },\n      \"targets\": [\n        {\n         \
+    \ \"expr\": \"sum(rate(rabbitmq_global_messages_received_total{job=\\\"rabbitmq-prod\\\
+    \"}[1m]))\",\n          \"legendFormat\": \"Publish Rate\",\n          \"refId\"\
+    : \"A\"\n        },\n        {\n          \"expr\": \"sum(rate(rabbitmq_global_messages_acknowledged_total{job=\\\
     \"rabbitmq-prod\\\"}[1m]))\",\n          \"legendFormat\": \"Ack Rate\",\n   \
     \       \"refId\": \"B\"\n        }\n      ],\n      \"datasource\": {\n     \
     \   \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n    },\n\
@@ -187,7 +189,8 @@ data:
     \ }\n        }\n      }\n    },\n    {\n      \"id\": 4,\n      \"title\": \"\
     Queue Message Volumes\",\n      \"type\": \"timeseries\",\n      \"gridPos\":\
     \ {\n        \"h\": 8,\n        \"w\": 12,\n        \"x\": 0,\n        \"y\":\
-    \ 4\n      },\n      \"targets\": [\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages{job=\\\
+    \ 4\n      },\n      \"targets\": [\n        {\n          \"expr\": \"sum(rabbitmq_detailed_queue_messages_ram{job=\\\
+    \"rabbitmq-dr-metrics\\\"} + rabbitmq_detailed_queue_messages_persistent{job=\\\
     \"rabbitmq-dr-metrics\\\"}) by (queue)\",\n          \"legendFormat\": \"{{queue}}\"\
     ,\n          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n\
     \        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n\
