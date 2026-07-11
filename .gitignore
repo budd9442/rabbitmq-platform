@@ -3,3 +3,6 @@
 .terraform/
 *.tfstate
 *.tfstate.backup
+*.sh
+kubernetes/vpn/setup-vault-auth.sh
+
