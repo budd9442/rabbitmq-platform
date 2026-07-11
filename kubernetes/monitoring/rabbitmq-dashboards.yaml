@@ -425,7 +425,7 @@ data:
     \ queue \\\"${queue}\\\" on ${cluster.toUpperCase()} cluster...`, \\\"outgoing\\\
     \");\\n    \\n    let url = \\\"\\\";\\n    let auth = \\\"\\\";\\n    if (cluster\
     \ === \\\"prod\\\") {\\n      url = `https://prod.rmq.budd.codes/api/queues/%2F/${queue}/contents`;\\\
-    n      auth = prodAuth;\\n    } else {\\n      url = `https://prod.rmq.budd.codes/dr-api/api/queues/%2F/${queue}/contents`;\\\
+    n      auth = prodAuth;\\n    } else {\\n      url = `https://dr.rmq.budd.codes/api/queues/%2F/${queue}/contents`;\\\
     n      auth = drAuth;\\n    }\\n    \\n    try {\\n      const res = await fetch(url,\
     \ {\\n        method: \\\"DELETE\\\",\\n        headers: {\\n          \\\"Authorization\\\
     \": auth,\\n          \\\"Content-Type\\\": \\\"application/json\\\"\\n      \
