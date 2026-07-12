@@ -162,21 +162,21 @@ data:
     \ Disk\",\n      \"type\": \"gauge\",\n      \"gridPos\": {\n        \"h\": 5,\n\
     \        \"w\": 12,\n        \"x\": 12,\n        \"y\": 15\n      },\n      \"\
     targets\": [\n        {\n          \"expr\": \"max(rabbitmq_disk_space_available_bytes{job=\\\
-    \"rabbitmq-prod\\\"} / 1024 / 1024 / 1024) by (pod)\",\n          \"legendFormat\"\
-    : \"{{pod}}\",\n          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\"\
-    : {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n    \
-    \  },\n      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\":\
-    \ \"decbytes\",\n          \"thresholds\": {\n            \"mode\": \"absolute\"\
-    ,\n            \"steps\": [\n              {\n                \"color\": \"red\"\
-    ,\n                \"value\": null\n              },\n              {\n      \
-    \          \"color\": \"yellow\",\n                \"value\": 2\n            \
-    \  },\n              {\n                \"color\": \"green\",\n              \
-    \  \"value\": 5\n              }\n            ]\n          }\n        }\n    \
-    \  }\n    }\n  ],\n  \"refresh\": \"10s\",\n  \"schemaVersion\": 39,\n  \"tags\"\
-    : [\n    \"rabbitmq\"\n  ],\n  \"templating\": {\n    \"list\": []\n  },\n  \"\
-    time\": {\n    \"from\": \"now-1h\",\n    \"to\": \"now\"\n  },\n  \"timepicker\"\
-    : {},\n  \"timezone\": \"\",\n  \"title\": \"Oracle VM \\u2014 RabbitMQ Cluster\"\
-    ,\n  \"version\": 1,\n  \"weekStart\": \"\"\n}"
+    \"rabbitmq-prod\\\"}) by (pod)\",\n          \"legendFormat\": \"{{pod}}\",\n\
+    \          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n  \
+    \      \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n\
+    \      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"decbytes\"\
+    ,\n          \"thresholds\": {\n            \"mode\": \"absolute\",\n        \
+    \    \"steps\": [\n              {\n                \"color\": \"red\",\n    \
+    \            \"value\": null\n              },\n              {\n            \
+    \    \"color\": \"yellow\",\n                \"value\": 2000000000\n         \
+    \     },\n              {\n                \"color\": \"green\",\n           \
+    \     \"value\": 5000000000\n              }\n            ]\n          }\n   \
+    \     }\n      }\n    }\n  ],\n  \"refresh\": \"10s\",\n  \"schemaVersion\": 39,\n\
+    \  \"tags\": [\n    \"rabbitmq\"\n  ],\n  \"templating\": {\n    \"list\": []\n\
+    \  },\n  \"time\": {\n    \"from\": \"now-1h\",\n    \"to\": \"now\"\n  },\n \
+    \ \"timepicker\": {},\n  \"timezone\": \"\",\n  \"title\": \"Oracle VM \\u2014\
+    \ RabbitMQ Cluster\",\n  \"version\": 1,\n  \"weekStart\": \"\"\n}"
 kind: ConfigMap
 metadata:
   labels:
@@ -350,20 +350,20 @@ data:
     \ Disk\",\n      \"type\": \"gauge\",\n      \"gridPos\": {\n        \"h\": 5,\n\
     \        \"w\": 12,\n        \"x\": 12,\n        \"y\": 15\n      },\n      \"\
     targets\": [\n        {\n          \"expr\": \"max(rabbitmq_disk_space_available_bytes{job=~\\\
-    \"rabbitmq-dr-metrics-.*\\\"} / 1024 / 1024 / 1024) by (job)\",\n          \"\
-    legendFormat\": \"{{job}}\",\n          \"refId\": \"A\"\n        }\n      ],\n\
-    \      \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\":\
-    \ \"prometheus\"\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n\
-    \          \"unit\": \"decbytes\",\n          \"thresholds\": {\n            \"\
-    mode\": \"absolute\",\n            \"steps\": [\n              {\n           \
-    \     \"color\": \"red\",\n                \"value\": null\n              },\n\
-    \              {\n                \"color\": \"yellow\",\n                \"value\"\
-    : 2\n              },\n              {\n                \"color\": \"green\",\n\
-    \                \"value\": 5\n              }\n            ]\n          }\n \
-    \       }\n      }\n    }\n  ],\n  \"refresh\": \"10s\",\n  \"schemaVersion\"\
-    : 39,\n  \"tags\": [\n    \"rabbitmq\"\n  ],\n  \"templating\": {\n    \"list\"\
-    : []\n  },\n  \"time\": {\n    \"from\": \"now-1h\",\n    \"to\": \"now\"\n  },\n\
-    \  \"timepicker\": {},\n  \"timezone\": \"\",\n  \"title\": \"Tencent VM \\u2014\
+    \"rabbitmq-dr-metrics-.*\\\"}) by (job)\",\n          \"legendFormat\": \"{{job}}\"\
+    ,\n          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n\
+    \        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n\
+    \      \"fieldConfig\": {\n        \"defaults\": {\n          \"unit\": \"decbytes\"\
+    ,\n          \"thresholds\": {\n            \"mode\": \"absolute\",\n        \
+    \    \"steps\": [\n              {\n                \"color\": \"red\",\n    \
+    \            \"value\": null\n              },\n              {\n            \
+    \    \"color\": \"yellow\",\n                \"value\": 2000000000\n         \
+    \     },\n              {\n                \"color\": \"green\",\n           \
+    \     \"value\": 5000000000\n              }\n            ]\n          }\n   \
+    \     }\n      }\n    }\n  ],\n  \"refresh\": \"10s\",\n  \"schemaVersion\": 39,\n\
+    \  \"tags\": [\n    \"rabbitmq\"\n  ],\n  \"templating\": {\n    \"list\": []\n\
+    \  },\n  \"time\": {\n    \"from\": \"now-1h\",\n    \"to\": \"now\"\n  },\n \
+    \ \"timepicker\": {},\n  \"timezone\": \"\",\n  \"title\": \"Tencent VM \\u2014\
     \ RabbitMQ Cluster\",\n  \"version\": 1,\n  \"weekStart\": \"\"\n}"
 kind: ConfigMap
 metadata:
