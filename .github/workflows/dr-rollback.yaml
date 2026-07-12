@@ -144,8 +144,8 @@ jobs:
         git add "$PROD_APP" "$DR_APP"
         git commit -m "chore(dr): rollback — restore oracle-vm to ACTIVE — run/${{ github.run_id }}
 
-Reason: ${{ inputs.reason }}
-Operator: @${{ github.actor }}"
+        Reason: ${{ inputs.reason }}
+        Operator: @${{ github.actor }}"
         git push origin main
 
         echo "**✓ GitOps rollback committed. Oracle VM restoring to ACTIVE.**" >> $GITHUB_STEP_SUMMARY

@@ -365,16 +365,16 @@ jobs:
         git add "$PROD_APP" "$DR_APP"
         git commit -m "chore(dr): promote tencent-vm to ACTIVE — incident run/${{ github.run_id }}
 
-Reason: ${{ inputs.reason }}
-Operator: @${{ github.actor }}
-Time: $(date -u '+%Y-%m-%dT%H:%M:%SZ')
+        Reason: ${{ inputs.reason }}
+        Operator: @${{ github.actor }}
+        Time: $(date -u '+%Y-%m-%dT%H:%M:%SZ')
 
-Changes:
-  - rabbitmq-topology-prod: active-role → passive-role (Oracle demoted)
-  - rabbitmq-topology-dr:   passive-role → active-role (Tencent promoted)
+        Changes:
+          - rabbitmq-topology-prod: active-role → passive-role (Oracle demoted)
+          - rabbitmq-topology-dr:   passive-role → active-role (Tencent promoted)
 
-ArgoCD will auto-sync both clusters from this commit.
-DNS: prod.rmq.budd.codes now points to Tencent VM (${{ env.TENCENT_IP }})."
+        ArgoCD will auto-sync both clusters from this commit.
+        DNS: prod.rmq.budd.codes now points to Tencent VM (${{ env.TENCENT_IP }})."
 
         git push origin main
 
