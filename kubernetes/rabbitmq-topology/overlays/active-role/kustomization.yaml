@@ -3,4 +3,4 @@ kind: Kustomization
 resources:
 - ../../base
 - shovel.yaml
-- policy-orders-active.yaml
+- policy-active.yaml

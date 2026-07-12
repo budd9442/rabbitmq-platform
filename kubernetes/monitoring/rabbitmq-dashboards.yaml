@@ -42,8 +42,8 @@ data:
     \ = await policiesRes.json();\\n    const queues = await queuesRes.json();\\n\
     \    const shovels = await shovelsRes.json();\\n\\n    // Determine role: active\
     \ has dead-letter-exchange, passive has message-ttl\\n    const ordersPolicy =\
-    \ policies.find(p => p.name === \\\"orders-policy\\\");\\n    const isActive =\
-    \ ordersPolicy && ordersPolicy.definition && ordersPolicy.definition[\\\"dead-letter-exchange\\\
+    \ policies.find(p => p.name === \\\"rabbitmq-policy\\\");\\n    const isActive\
+    \ = ordersPolicy && ordersPolicy.definition && ordersPolicy.definition[\\\"dead-letter-exchange\\\
     \"];\\n    const role = isActive ? \\\"ACTIVE\\\" : \\\"PASSIVE (DR)\\\";\\n \
     \   const roleColor = isActive ? \\\"#2ecc71\\\" : \\\"#f39c12\\\";\\n    const\
     \ dotColor = isActive ? \\\"#2ecc71\\\" : \\\"#f39c12\\\";\\n\\n    dot.style.background\
@@ -229,8 +229,8 @@ data:
     \ = await policiesRes.json();\\n    const queues = await queuesRes.json();\\n\
     \    const shovels = await shovelsRes.json();\\n\\n    // Determine role: active\
     \ has dead-letter-exchange, passive has message-ttl\\n    const ordersPolicy =\
-    \ policies.find(p => p.name === \\\"orders-policy\\\");\\n    const isActive =\
-    \ ordersPolicy && ordersPolicy.definition && ordersPolicy.definition[\\\"dead-letter-exchange\\\
+    \ policies.find(p => p.name === \\\"rabbitmq-policy\\\");\\n    const isActive\
+    \ = ordersPolicy && ordersPolicy.definition && ordersPolicy.definition[\\\"dead-letter-exchange\\\
     \"];\\n    const role = isActive ? \\\"ACTIVE\\\" : \\\"PASSIVE (DR)\\\";\\n \
     \   const roleColor = isActive ? \\\"#2ecc71\\\" : \\\"#f39c12\\\";\\n    const\
     \ dotColor = isActive ? \\\"#2ecc71\\\" : \\\"#f39c12\\\";\\n\\n    dot.style.background\
@@ -506,7 +506,7 @@ data:
     \     try {\\n        const res = await fetch(`${cluster.url}/api/policies/%2F`,\
     \ {\\n          headers: { \\\"Authorization\\\": cluster.auth }\\n        });\\\
     n        const policies = await res.json();\\n        const ordersPolicy = policies.find(p\
-    \ => p.name === \\\"orders-policy\\\");\\n        if (ordersPolicy && ordersPolicy.definition\
+    \ => p.name === \\\"rabbitmq-policy\\\");\\n        if (ordersPolicy && ordersPolicy.definition\
     \ && ordersPolicy.definition[\\\"dead-letter-exchange\\\"]) {\\n          activeClusterUrl\
     \ = cluster.url;\\n          activeClusterAuth = cluster.auth;\\n          activeClusterName\
     \ = cluster.name;\\n          logTerminal(`Active cluster detected: <b>${cluster.name}</b>\
