@@ -617,21 +617,40 @@ data:
     : 0,\n  \"graphTooltip\": 0,\n  \"id\": null,\n  \"links\": [],\n  \"liveNow\"\
     : false,\n  \"panels\": [\n    {\n      \"id\": 1,\n      \"title\": \"Raft Node\
     \ Count\",\n      \"type\": \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n\
-    \        \"w\": 8,\n        \"x\": 0,\n        \"y\": 0\n      },\n      \"targets\"\
-    : [\n        {\n          \"expr\": \"max(rabbitmq_queue_coordination_raft_peers{job=~\\\
+    \        \"w\": 6,\n        \"x\": 0,\n        \"y\": 0\n      },\n      \"targets\"\
+    : [\n        {\n          \"expr\": \"count(rabbitmq_raft_term{job=~\\\"$cluster\\\
+    \"})\",\n          \"instant\": true,\n          \"refId\": \"A\"\n        }\n\
+    \      ],\n      \"datasource\": {\n        \"type\": \"prometheus\",\n      \
+    \  \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\": {\n        \"defaults\"\
+    : {\n          \"color\": {\n            \"mode\": \"thresholds\"\n          },\n\
+    \          \"thresholds\": {\n            \"mode\": \"absolute\",\n          \
+    \  \"steps\": [\n              {\n                \"color\": \"red\",\n      \
+    \          \"value\": null\n              },\n              {\n              \
+    \  \"color\": \"green\",\n                \"value\": 3\n              }\n    \
+    \        ]\n          }\n        }\n      }\n    },\n    {\n      \"id\": 2,\n\
+    \      \"title\": \"Offline Raft Peers\",\n      \"type\": \"stat\",\n      \"\
+    gridPos\": {\n        \"h\": 4,\n        \"w\": 6,\n        \"x\": 6,\n      \
+    \  \"y\": 0\n      },\n      \"targets\": [\n        {\n          \"expr\": \"\
+    sum(rabbitmq_unreachable_cluster_peers_count{job=~\\\"$cluster\\\"})\",\n    \
+    \      \"instant\": true,\n          \"refId\": \"A\"\n        }\n      ],\n \
+    \     \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"\
+    prometheus\"\n      },\n      \"fieldConfig\": {\n        \"defaults\": {\n  \
+    \        \"color\": {\n            \"mode\": \"thresholds\"\n          },\n  \
+    \        \"thresholds\": {\n            \"mode\": \"absolute\",\n            \"\
+    steps\": [\n              {\n                \"color\": \"green\",\n         \
+    \       \"value\": null\n              },\n              {\n                \"\
+    color\": \"red\",\n                \"value\": 1\n              }\n           \
+    \ ]\n          }\n        }\n      }\n    },\n    {\n      \"id\": 3,\n      \"\
+    title\": \"Max Raft Term\",\n      \"type\": \"stat\",\n      \"gridPos\": {\n\
+    \        \"h\": 4,\n        \"w\": 6,\n        \"x\": 12,\n        \"y\": 0\n\
+    \      },\n      \"targets\": [\n        {\n          \"expr\": \"max(rabbitmq_raft_term{job=~\\\
     \"$cluster\\\"})\",\n          \"instant\": true,\n          \"refId\": \"A\"\n\
     \        }\n      ],\n      \"datasource\": {\n        \"type\": \"prometheus\"\
-    ,\n        \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\": {\n     \
-    \   \"defaults\": {\n          \"color\": {\n            \"mode\": \"thresholds\"\
-    \n          },\n          \"thresholds\": {\n            \"mode\": \"absolute\"\
-    ,\n            \"steps\": [\n              {\n                \"color\": \"red\"\
-    ,\n                \"value\": null\n              },\n              {\n      \
-    \          \"color\": \"green\",\n                \"value\": 3\n             \
-    \ }\n            ]\n          }\n        }\n      }\n    },\n    {\n      \"id\"\
-    : 2,\n      \"title\": \"Raft Log Replication Lag (Unreplicated)\",\n      \"\
-    type\": \"stat\",\n      \"gridPos\": {\n        \"h\": 4,\n        \"w\": 8,\n\
-    \        \"x\": 8,\n        \"y\": 0\n      },\n      \"targets\": [\n       \
-    \ {\n          \"expr\": \"sum(rabbitmq_queue_coordination_raft_unreplicated_index{job=~\\\
+    ,\n        \"uid\": \"prometheus\"\n      }\n    },\n    {\n      \"id\": 4,\n\
+    \      \"title\": \"Uncommitted Raft Logs\",\n      \"type\": \"stat\",\n    \
+    \  \"gridPos\": {\n        \"h\": 4,\n        \"w\": 6,\n        \"x\": 18,\n\
+    \        \"y\": 0\n      },\n      \"targets\": [\n        {\n          \"expr\"\
+    : \"sum(rabbitmq_raft_last_index{job=~\\\"$cluster\\\"} - rabbitmq_raft_commit_index{job=~\\\
     \"$cluster\\\"})\",\n          \"instant\": true,\n          \"refId\": \"A\"\n\
     \        }\n      ],\n      \"datasource\": {\n        \"type\": \"prometheus\"\
     ,\n        \"uid\": \"prometheus\"\n      },\n      \"fieldConfig\": {\n     \
@@ -641,47 +660,43 @@ data:
     ,\n                \"value\": null\n              },\n              {\n      \
     \          \"color\": \"red\",\n                \"value\": 1\n              }\n\
     \            ]\n          }\n        }\n      }\n    },\n    {\n      \"id\":\
-    \ 3,\n      \"title\": \"Max Raft Term\",\n      \"type\": \"stat\",\n      \"\
-    gridPos\": {\n        \"h\": 4,\n        \"w\": 8,\n        \"x\": 16,\n     \
-    \   \"y\": 0\n      },\n      \"targets\": [\n        {\n          \"expr\": \"\
-    max(rabbitmq_queue_coordination_raft_term{job=~\\\"$cluster\\\"})\",\n       \
-    \   \"instant\": true,\n          \"refId\": \"A\"\n        }\n      ],\n    \
-    \  \"datasource\": {\n        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\
-    \n      }\n    },\n    {\n      \"id\": 4,\n      \"title\": \"Replication Lag\
-    \ per Queue/Node\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n \
-    \       \"h\": 8,\n        \"w\": 12,\n        \"x\": 0,\n        \"y\": 4\n \
-    \     },\n      \"targets\": [\n        {\n          \"expr\": \"rabbitmq_queue_coordination_raft_unreplicated_index{job=~\\\
-    \"$cluster\\\"}\",\n          \"legendFormat\": \"{{queue}} ({{instance}})\",\n\
-    \          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n  \
-    \      \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n \
-    \   },\n    {\n      \"id\": 5,\n      \"title\": \"Active Leaders Placement per\
-    \ Node\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"h\"\
-    : 8,\n        \"w\": 12,\n        \"x\": 12,\n        \"y\": 4\n      },\n   \
-    \   \"targets\": [\n        {\n          \"expr\": \"sum(rabbitmq_queue_coordination_raft_leader{job=~\\\
-    \"$cluster\\\"}) by (instance)\",\n          \"legendFormat\": \"{{instance}}\"\
-    ,\n          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n\
+    \ 5,\n      \"title\": \"Raft Log Indices (Last vs Commit)\",\n      \"type\"\
+    : \"timeseries\",\n      \"gridPos\": {\n        \"h\": 8,\n        \"w\": 12,\n\
+    \        \"x\": 0,\n        \"y\": 4\n      },\n      \"targets\": [\n       \
+    \ {\n          \"expr\": \"rabbitmq_raft_last_index{job=~\\\"$cluster\\\"}\",\n\
+    \          \"legendFormat\": \"Last: {{pod}}{{instance}}\",\n          \"refId\"\
+    : \"A\"\n        },\n        {\n          \"expr\": \"rabbitmq_raft_commit_index{job=~\\\
+    \"$cluster\\\"}\",\n          \"legendFormat\": \"Commit: {{pod}}{{instance}}\"\
+    ,\n          \"refId\": \"B\"\n        }\n      ],\n      \"datasource\": {\n\
     \        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n\
-    \    },\n    {\n      \"id\": 6,\n      \"title\": \"Uncommitted Raft Entries\
-    \ per Queue/Node\",\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n \
-    \       \"h\": 8,\n        \"w\": 24,\n        \"x\": 0,\n        \"y\": 12\n\
-    \      },\n      \"targets\": [\n        {\n          \"expr\": \"rabbitmq_queue_coordination_raft_uncommitted_entry_count{job=~\\\
-    \"$cluster\\\"}\",\n          \"legendFormat\": \"{{queue}} ({{instance}})\",\n\
-    \          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n  \
-    \      \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n \
-    \   }\n  ],\n  \"refresh\": \"10s\",\n  \"schemaVersion\": 39,\n  \"tags\": [\n\
-    \    \"rabbitmq\"\n  ],\n  \"templating\": {\n    \"list\": [\n      {\n     \
-    \   \"current\": {\n          \"selected\": true,\n          \"value\": \"rabbitmq-prod\"\
-    ,\n          \"text\": \"Oracle VM (Primary)\"\n        },\n        \"hide\":\
-    \ 0,\n        \"name\": \"cluster\",\n        \"options\": [\n          {\n  \
-    \          \"selected\": true,\n            \"value\": \"rabbitmq-prod\",\n  \
-    \          \"text\": \"Oracle VM (Primary)\"\n          },\n          {\n    \
-    \        \"selected\": false,\n            \"value\": \"rabbitmq-dr-metrics-.*\"\
-    ,\n            \"text\": \"Tencent VM (DR)\"\n          }\n        ],\n      \
-    \  \"query\": \"Oracle VM (Primary) : rabbitmq-prod, Tencent VM (DR) : rabbitmq-dr-metrics-.*\"\
-    ,\n        \"type\": \"custom\"\n      }\n    ]\n  },\n  \"time\": {\n    \"from\"\
-    : \"now-1h\",\n    \"to\": \"now\"\n  },\n  \"timepicker\": {},\n  \"timezone\"\
-    : \"\",\n  \"title\": \"RabbitMQ Raft Consensus & HA Diagnostics\",\n  \"version\"\
-    : 1,\n  \"weekStart\": \"\"\n}"
+    \    },\n    {\n      \"id\": 6,\n      \"title\": \"Raft Commit Latency (seconds)\"\
+    ,\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"h\": 8,\n\
+    \        \"w\": 12,\n        \"x\": 12,\n        \"y\": 4\n      },\n      \"\
+    targets\": [\n        {\n          \"expr\": \"rabbitmq_raft_commit_latency_seconds{job=~\\\
+    \"$cluster\\\"}\",\n          \"legendFormat\": \"{{pod}}{{instance}}\",\n   \
+    \       \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n     \
+    \   \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      }\n    },\n\
+    \    {\n      \"id\": 7,\n      \"title\": \"Raft Elections Count\",\n      \"\
+    type\": \"timeseries\",\n      \"gridPos\": {\n        \"h\": 8,\n        \"w\"\
+    : 24,\n        \"x\": 0,\n        \"y\": 12\n      },\n      \"targets\": [\n\
+    \        {\n          \"expr\": \"rabbitmq_raft_elections{job=~\\\"$cluster\\\"\
+    }\",\n          \"legendFormat\": \"{{pod}}{{instance}}\",\n          \"refId\"\
+    : \"A\"\n        }\n      ],\n      \"datasource\": {\n        \"type\": \"prometheus\"\
+    ,\n        \"uid\": \"prometheus\"\n      }\n    }\n  ],\n  \"refresh\": \"10s\"\
+    ,\n  \"schemaVersion\": 39,\n  \"tags\": [\n    \"rabbitmq\"\n  ],\n  \"templating\"\
+    : {\n    \"list\": [\n      {\n        \"current\": {\n          \"selected\"\
+    : true,\n          \"value\": \"rabbitmq-prod\",\n          \"text\": \"Oracle\
+    \ VM (Primary)\"\n        },\n        \"hide\": 0,\n        \"name\": \"cluster\"\
+    ,\n        \"options\": [\n          {\n            \"selected\": true,\n    \
+    \        \"value\": \"rabbitmq-prod\",\n            \"text\": \"Oracle VM (Primary)\"\
+    \n          },\n          {\n            \"selected\": false,\n            \"\
+    value\": \"rabbitmq-dr-metrics-.*\",\n            \"text\": \"Tencent VM (DR)\"\
+    \n          }\n        ],\n        \"query\": \"Oracle VM (Primary) : rabbitmq-prod,\
+    \ Tencent VM (DR) : rabbitmq-dr-metrics-.*\",\n        \"type\": \"custom\"\n\
+    \      }\n    ]\n  },\n  \"time\": {\n    \"from\": \"now-1h\",\n    \"to\": \"\
+    now\"\n  },\n  \"timepicker\": {},\n  \"timezone\": \"\",\n  \"title\": \"RabbitMQ\
+    \ Raft Consensus & HA Diagnostics\",\n  \"version\": 1,\n  \"weekStart\": \"\"\
+    \n}"
 kind: ConfigMap
 metadata:
   labels:
