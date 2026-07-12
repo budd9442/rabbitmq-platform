@@ -35,9 +35,9 @@ data:
     \ = document.getElementById(\\\"shovel-count-oracle\\\");\\n  const queueCount\
     \ = document.getElementById(\\\"queue-count-oracle\\\");\\n  const policyEl =\
     \ document.getElementById(\\\"policy-oracle\\\");\\n\\n  try {\\n    const [policiesRes,\
-    \ queuesRes, shovelsRes] = await Promise.all([\\n      fetch(\\\"https://prod.rmq.budd.codes/api/policies/%2F\\\
-    \", { headers: { \\\"Authorization\\\": auth } }),\\n      fetch(\\\"https://prod.rmq.budd.codes/api/queues\\\
-    \", { headers: { \\\"Authorization\\\": auth } }),\\n      fetch(\\\"https://prod.rmq.budd.codes/api/shovels\\\
+    \ queuesRes, shovelsRes] = await Promise.all([\\n      fetch(\\\"/oracle-api/api/policies/%2F\\\
+    \", { headers: { \\\"Authorization\\\": auth } }),\\n      fetch(\\\"/oracle-api/api/queues\\\
+    \", { headers: { \\\"Authorization\\\": auth } }),\\n      fetch(\\\"/oracle-api/api/shovels\\\
     \", { headers: { \\\"Authorization\\\": auth } })\\n    ]);\\n\\n    const policies\
     \ = await policiesRes.json();\\n    const queues = await queuesRes.json();\\n\
     \    const shovels = await shovelsRes.json();\\n\\n    // Determine role: active\
@@ -222,9 +222,9 @@ data:
     \ = document.getElementById(\\\"shovel-count-tencent\\\");\\n  const queueCount\
     \ = document.getElementById(\\\"queue-count-tencent\\\");\\n  const policyEl =\
     \ document.getElementById(\\\"policy-tencent\\\");\\n\\n  try {\\n    const [policiesRes,\
-    \ queuesRes, shovelsRes] = await Promise.all([\\n      fetch(\\\"https://dr.rmq.budd.codes/api/policies/%2F\\\
-    \", { headers: { \\\"Authorization\\\": auth } }),\\n      fetch(\\\"https://dr.rmq.budd.codes/api/queues\\\
-    \", { headers: { \\\"Authorization\\\": auth } }),\\n      fetch(\\\"https://dr.rmq.budd.codes/api/shovels\\\
+    \ queuesRes, shovelsRes] = await Promise.all([\\n      fetch(\\\"/tencent-api/api/policies/%2F\\\
+    \", { headers: { \\\"Authorization\\\": auth } }),\\n      fetch(\\\"/tencent-api/api/queues\\\
+    \", { headers: { \\\"Authorization\\\": auth } }),\\n      fetch(\\\"/tencent-api/api/shovels\\\
     \", { headers: { \\\"Authorization\\\": auth } })\\n    ]);\\n\\n    const policies\
     \ = await policiesRes.json();\\n    const queues = await queuesRes.json();\\n\
     \    const shovels = await shovelsRes.json();\\n\\n    // Determine role: active\
@@ -469,7 +469,7 @@ data:
     \ = \\\"HceYy4C_S4RIlPgv0jMmGpO4e9tnR_VN\\\";\\n\\n  const oracleAuth = \\\"Basic\
     \ \\\" + btoa(oracleUser + \\\":\\\" + oraclePass);\\n  const tencentAuth = \\\
     \"Basic \\\" + btoa(tencentUser + \\\":\\\" + tencentPass);\\n\\n  // Detect active\
-    \ cluster by checking policy definition\\n  let activeClusterUrl = \\\"https://prod.rmq.budd.codes\\\
+    \ cluster by checking policy definition\\n  let activeClusterUrl = \\\"/oracle-api\\\
     \";\\n  let activeClusterAuth = oracleAuth;\\n  let activeClusterName = \\\"Oracle\
     \ VM\\\";\\n\\n  window.logTerminal = function(message, type = \\\"info\\\") {\\\
     n    const term = document.getElementById(\\\"console-terminal\\\");\\n    if\
@@ -482,10 +482,10 @@ data:
     \"color: #6a8759;\\\">[${time}]</span> ${message}`;\\n    term.appendChild(log);\\\
     n    term.scrollTop = term.scrollHeight;\\n  };\\n\\n  // Detect which cluster\
     \ is active from policy\\n  async function detectActiveCluster() {\\n    const\
-    \ clusters = [\\n      { name: \\\"Oracle VM\\\", url: \\\"https://prod.rmq.budd.codes\\\
-    \", auth: oracleAuth },\\n      { name: \\\"Tencent VM\\\", url: \\\"https://dr.rmq.budd.codes\\\
-    \", auth: tencentAuth }\\n    ];\\n\\n    for (const cluster of clusters) {\\\
-    n      try {\\n        const res = await fetch(`${cluster.url}/api/policies/%2F`,\
+    \ clusters = [\\n      { name: \\\"Oracle VM\\\", url: \\\"/oracle-api\\\", auth:\
+    \ oracleAuth },\\n      { name: \\\"Tencent VM\\\", url: \\\"/tencent-api\\\"\
+    , auth: tencentAuth }\\n    ];\\n\\n    for (const cluster of clusters) {\\n \
+    \     try {\\n        const res = await fetch(`${cluster.url}/api/policies/%2F`,\
     \ {\\n          headers: { \\\"Authorization\\\": cluster.auth }\\n        });\\\
     n        const policies = await res.json();\\n        const ordersPolicy = policies.find(p\
     \ => p.name === \\\"orders-policy\\\");\\n        if (ordersPolicy && ordersPolicy.definition\
@@ -562,26 +562,25 @@ data:
     \ (!confirm(`Purge all messages in \\\"${queue}\\\" on ${clusterKey === \\\"oracle\\\
     \" ? \\\"Oracle VM\\\" : \\\"Tencent VM\\\"}?`)) {\\n      logTerminal(\\\"Purge\
     \ cancelled.\\\", \\\"info\\\"); return;\\n    }\\n    const url = clusterKey\
-    \ === \\\"oracle\\\"\\n      ? `https://prod.rmq.budd.codes/api/queues/%2F/${queue}/contents`\\\
-    n      : `https://dr.rmq.budd.codes/api/queues/%2F/${queue}/contents`;\\n    const\
-    \ auth = clusterKey === \\\"oracle\\\" ? oracleAuth : tencentAuth;\\n    logTerminal(`Purging\
-    \ \\\"${queue}\\\" on ${clusterKey === \\\"oracle\\\" ? \\\"Oracle VM\\\" : \\\
-    \"Tencent VM\\\"}...`, \\\"outgoing\\\");\\n    try {\\n      const res = await\
-    \ fetch(url, { method: \\\"DELETE\\\", headers: { \\\"Authorization\\\": auth,\
-    \ \\\"Content-Type\\\": \\\"application/json\\\" } });\\n      if (!res.ok) throw\
-    \ new Error(await res.text() || res.statusText);\\n      logTerminal(`Success!\
-    \ Queue \\\"${queue}\\\" purged.`, \\\"success\\\");\\n    } catch (err) {\\n\
-    \      logTerminal(`Error: ${err.message}`, \\\"error\\\");\\n    }\\n  };\\n\\\
-    n  // Initialize\\n  setTimeout(async () => {\\n    logTerminal(\\\"Console initialized.\
-    \ Detecting active cluster role...\\\", \\\"info\\\");\\n    await detectActiveCluster();\\\
-    n    await Promise.all([loadDynamicQueues(), loadDynamicRoutingKeys()]);\\n  \
-    \  logTerminal(\\\"Console ready.\\\", \\\"success\\\");\\n  }, 200);\\n})();\\\
-    n</script>\\n\",\n        \"mode\": \"html\"\n      }\n    }\n  ],\n  \"refresh\"\
-    : \"\",\n  \"schemaVersion\": 39,\n  \"tags\": [\n    \"rabbitmq\"\n  ],\n  \"\
-    templating\": {\n    \"list\": []\n  },\n  \"time\": {\n    \"from\": \"now-1h\"\
-    ,\n    \"to\": \"now\"\n  },\n  \"timepicker\": {},\n  \"timezone\": \"\",\n \
-    \ \"title\": \"RabbitMQ Active Cluster Message Console\",\n  \"version\": 1,\n\
-    \  \"weekStart\": \"\"\n}"
+    \ === \\\"oracle\\\"\\n      ? `/oracle-api/api/queues/%2F/${queue}/contents`\\\
+    n      : `/tencent-api/api/queues/%2F/${queue}/contents`;\\n    const auth = clusterKey\
+    \ === \\\"oracle\\\" ? oracleAuth : tencentAuth;\\n    logTerminal(`Purging \\\
+    \"${queue}\\\" on ${clusterKey === \\\"oracle\\\" ? \\\"Oracle VM\\\" : \\\"Tencent\
+    \ VM\\\"}...`, \\\"outgoing\\\");\\n    try {\\n      const res = await fetch(url,\
+    \ { method: \\\"DELETE\\\", headers: { \\\"Authorization\\\": auth, \\\"Content-Type\\\
+    \": \\\"application/json\\\" } });\\n      if (!res.ok) throw new Error(await\
+    \ res.text() || res.statusText);\\n      logTerminal(`Success! Queue \\\"${queue}\\\
+    \" purged.`, \\\"success\\\");\\n    } catch (err) {\\n      logTerminal(`Error:\
+    \ ${err.message}`, \\\"error\\\");\\n    }\\n  };\\n\\n  // Initialize\\n  setTimeout(async\
+    \ () => {\\n    logTerminal(\\\"Console initialized. Detecting active cluster\
+    \ role...\\\", \\\"info\\\");\\n    await detectActiveCluster();\\n    await Promise.all([loadDynamicQueues(),\
+    \ loadDynamicRoutingKeys()]);\\n    logTerminal(\\\"Console ready.\\\", \\\"success\\\
+    \");\\n  }, 200);\\n})();\\n</script>\\n\",\n        \"mode\": \"html\"\n    \
+    \  }\n    }\n  ],\n  \"refresh\": \"\",\n  \"schemaVersion\": 39,\n  \"tags\"\
+    : [\n    \"rabbitmq\"\n  ],\n  \"templating\": {\n    \"list\": []\n  },\n  \"\
+    time\": {\n    \"from\": \"now-1h\",\n    \"to\": \"now\"\n  },\n  \"timepicker\"\
+    : {},\n  \"timezone\": \"\",\n  \"title\": \"RabbitMQ Active Cluster Message Console\"\
+    ,\n  \"version\": 1,\n  \"weekStart\": \"\"\n}"
 kind: ConfigMap
 metadata:
   labels:
