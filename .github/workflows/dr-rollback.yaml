@@ -64,6 +64,8 @@ jobs:
           secret/data/rabbitmq/tencent   rmq_pass      | TENCENT_RMQ_PASS ;
           secret/data/namecom            username      | NAMECOM_USER ;
           secret/data/namecom            api_token     | NAMECOM_TOKEN ;
+          secret/data/ssh/oracle         private_key   | ORACLE_SSH_KEY ;
+          secret/data/ssh/tencent        private_key   | TENCENT_SSH_KEY ;
           secret/data/notifications/slack webhook_url  | SLACK_WEBHOOK_URL
 
     - name: "Checkout repository"
@@ -149,6 +151,22 @@ jobs:
         git push origin main
 
         echo "**✓ GitOps rollback committed. Oracle VM restoring to ACTIVE.**" >> $GITHUB_STEP_SUMMARY
+
+        # Write SSH keys for patching
+        echo "$TENCENT_SSH_KEY" > /tmp/tencent_key
+        chmod 600 /tmp/tencent_key
+        echo "$ORACLE_SSH_KEY" > /tmp/oracle_key
+        chmod 600 /tmp/oracle_key
+
+        echo "  Applying ArgoCD Application patch on Oracle VM..."
+        ssh -o StrictHostKeyChecking=no -i /tmp/oracle_key ubuntu@$ORACLE_HOST \
+          "sudo kubectl patch application rabbitmq-topology-prod -n argocd --type=merge -p '{\"spec\":{\"source\":{\"path\":\"kubernetes/rabbitmq-topology/overlays/active-role\"}}}'" || echo "  ⚠️ Failed to patch Oracle application"
+
+        echo "  Applying ArgoCD Application patch on Tencent VM..."
+        ssh -o StrictHostKeyChecking=no -i /tmp/tencent_key ubuntu@$TENCENT_HOST \
+          "sudo kubectl patch application rabbitmq-topology-dr -n argocd --type=merge -p '{\"spec\":{\"source\":{\"path\":\"kubernetes/rabbitmq-topology/overlays/passive-role\"}}}'" || echo "  ⚠️ Failed to patch Tencent application"
+
+        rm -f /tmp/tencent_key /tmp/oracle_key
 
     - name: "Notify Slack"
       if: always()
