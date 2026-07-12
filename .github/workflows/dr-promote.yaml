@@ -48,7 +48,7 @@ env:
   DR_DNS_HOST: "dr.rmq"           # → dr.rmq.budd.codes
   TENCENT_IP: "43.173.6.97"
   ORACLE_IP: "140.245.55.10"
-  GIT_REPO: "budd9442/rmq"
+  GIT_REPO: "budd9442/rabbitmq-platform"
   ARGOCD_APP_ORACLE: "rabbitmq-topology-prod"
   ARGOCD_APP_TENCENT: "rabbitmq-topology-dr"
   OVERLAY_ACTIVE: "kubernetes/rabbitmq-topology/overlays/active-role"

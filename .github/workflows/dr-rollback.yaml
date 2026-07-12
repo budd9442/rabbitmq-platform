@@ -28,7 +28,7 @@ env:
   NAMECOM_API_BASE: "https://api.name.com/v4"
   PROD_DNS_HOST: "prod.rmq"
   ORACLE_IP: "140.245.55.10"
-  GIT_REPO: "budd9442/rmq"
+  GIT_REPO: "budd9442/rabbitmq-platform"
   OVERLAY_ACTIVE: "kubernetes/rabbitmq-topology/overlays/active-role"
   OVERLAY_PASSIVE: "kubernetes/rabbitmq-topology/overlays/passive-role"
 
