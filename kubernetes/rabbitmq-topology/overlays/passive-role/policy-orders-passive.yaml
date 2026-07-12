@@ -5,7 +5,7 @@ metadata:
   namespace: rabbitmq
 spec:
   name: orders-policy
-  pattern: "^orders-queue$"
+  pattern: ".*"
   applyTo: queues
   definition:
     message-ttl: 180000
