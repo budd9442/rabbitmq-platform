@@ -682,21 +682,29 @@ data:
     \        {\n          \"expr\": \"rabbitmq_raft_elections{job=~\\\"$cluster\\\"\
     }\",\n          \"legendFormat\": \"{{pod}}{{instance}}\",\n          \"refId\"\
     : \"A\"\n        }\n      ],\n      \"datasource\": {\n        \"type\": \"prometheus\"\
-    ,\n        \"uid\": \"prometheus\"\n      }\n    }\n  ],\n  \"refresh\": \"10s\"\
-    ,\n  \"schemaVersion\": 39,\n  \"tags\": [\n    \"rabbitmq\"\n  ],\n  \"templating\"\
-    : {\n    \"list\": [\n      {\n        \"current\": {\n          \"selected\"\
-    : true,\n          \"value\": \"rabbitmq-prod\",\n          \"text\": \"Oracle\
-    \ VM (Primary)\"\n        },\n        \"hide\": 0,\n        \"name\": \"cluster\"\
-    ,\n        \"options\": [\n          {\n            \"selected\": true,\n    \
-    \        \"value\": \"rabbitmq-prod\",\n            \"text\": \"Oracle VM (Primary)\"\
-    \n          },\n          {\n            \"selected\": false,\n            \"\
-    value\": \"rabbitmq-dr-metrics-.*\",\n            \"text\": \"Tencent VM (DR)\"\
-    \n          }\n        ],\n        \"query\": \"Oracle VM (Primary) : rabbitmq-prod,\
-    \ Tencent VM (DR) : rabbitmq-dr-metrics-.*\",\n        \"type\": \"custom\"\n\
-    \      }\n    ]\n  },\n  \"time\": {\n    \"from\": \"now-1h\",\n    \"to\": \"\
-    now\"\n  },\n  \"timepicker\": {},\n  \"timezone\": \"\",\n  \"title\": \"RabbitMQ\
-    \ Raft Consensus & HA Diagnostics\",\n  \"version\": 1,\n  \"weekStart\": \"\"\
-    \n}"
+    ,\n        \"uid\": \"prometheus\"\n      }\n    },\n    {\n      \"id\": 8,\n\
+    \      \"title\": \"Quorum Queue Leader Placement\",\n      \"type\": \"table\"\
+    ,\n      \"gridPos\": {\n        \"h\": 8,\n        \"w\": 24,\n        \"x\"\
+    : 0,\n        \"y\": 20\n      },\n      \"targets\": [\n        {\n         \
+    \ \"expr\": \"rabbitmq_detailed_queue_info{job=~\\\"$cluster\\\", membership=\\\
+    \"leader\\\"}\",\n          \"instant\": true,\n          \"format\": \"table\"\
+    ,\n          \"refId\": \"A\"\n        }\n      ],\n      \"datasource\": {\n\
+    \        \"type\": \"prometheus\",\n        \"uid\": \"prometheus\"\n      },\n\
+    \      \"options\": {\n        \"showHeader\": true\n      }\n    }\n  ],\n  \"\
+    refresh\": \"10s\",\n  \"schemaVersion\": 39,\n  \"tags\": [\n    \"rabbitmq\"\
+    \n  ],\n  \"templating\": {\n    \"list\": [\n      {\n        \"current\": {\n\
+    \          \"selected\": true,\n          \"value\": \"rabbitmq-prod\",\n    \
+    \      \"text\": \"Oracle VM (Primary)\"\n        },\n        \"hide\": 0,\n \
+    \       \"name\": \"cluster\",\n        \"options\": [\n          {\n        \
+    \    \"selected\": true,\n            \"value\": \"rabbitmq-prod\",\n        \
+    \    \"text\": \"Oracle VM (Primary)\"\n          },\n          {\n          \
+    \  \"selected\": false,\n            \"value\": \"rabbitmq-dr-metrics-.*\",\n\
+    \            \"text\": \"Tencent VM (DR)\"\n          }\n        ],\n        \"\
+    query\": \"Oracle VM (Primary) : rabbitmq-prod, Tencent VM (DR) : rabbitmq-dr-metrics-.*\"\
+    ,\n        \"type\": \"custom\"\n      }\n    ]\n  },\n  \"time\": {\n    \"from\"\
+    : \"now-1h\",\n    \"to\": \"now\"\n  },\n  \"timepicker\": {},\n  \"timezone\"\
+    : \"\",\n  \"title\": \"RabbitMQ Raft Consensus & HA Diagnostics\",\n  \"version\"\
+    : 1,\n  \"weekStart\": \"\"\n}"
 kind: ConfigMap
 metadata:
   labels:
