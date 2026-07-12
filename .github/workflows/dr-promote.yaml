@@ -219,9 +219,9 @@ jobs:
               -o BatchMode=yes \
               -i /tmp/oracle_key \
               ubuntu@${{ env.ORACLE_HOST }} \
-            "sudo systemctl stop k3s 2>/dev/null && echo FENCED" && FENCED=true && \
-            echo "  ✓ Oracle fenced via SSH (k3s stopped — full cluster down)" || \
-            echo "  SSH STONITH failed — Oracle appears to be fully dead (safe to continue)"
+             "sudo systemctl stop k3s 2>/dev/null && (sudo /usr/local/bin/k3s-killall.sh || true) && echo FENCED" && FENCED=true && \
+             echo "  ✓ Oracle fenced via SSH (k3s stopped and pods killed)" || \
+             echo "  SSH STONITH failed — Oracle appears to be fully dead (safe to continue)"
 
           rm -f /tmp/oracle_key
         fi
