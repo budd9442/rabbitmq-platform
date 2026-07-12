@@ -81,6 +81,8 @@ jobs:
       run: |
         echo "### Preflight: Oracle Health Check" >> $GITHUB_STEP_SUMMARY
         HTTP=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 \
+          -k \
+          --resolve "prod.rmq.budd.codes:443:${{ env.ORACLE_IP }}" \
           -u "$ORACLE_RMQ_USER:$ORACLE_RMQ_PASS" \
           "${{ env.ORACLE_RMQ_URL }}/api/overview" 2>/dev/null || echo "000")
         if [ "$HTTP" != "200" ]; then
