@@ -146,11 +146,15 @@ jobs:
         git config user.name "DR Promotion Bot"
         git config user.email "dr-bot@budd.codes"
         git add "$PROD_APP" "$DR_APP"
-        git commit -m "chore(dr): rollback — restore oracle-vm to ACTIVE — run/${{ github.run_id }}
+        if ! git diff --quiet || ! git diff --staged --quiet; then
+          git commit -m "chore(dr): rollback — restore oracle-vm to ACTIVE — run/${{ github.run_id }}
 
-        Reason: ${{ inputs.reason }}
-        Operator: @${{ github.actor }}"
-        git push origin main
+          Reason: ${{ inputs.reason }}
+          Operator: @${{ github.actor }}"
+          git push origin main
+        else
+          echo "No overlay changes to commit. Repos are already aligned."
+        fi
 
         echo "**✓ GitOps rollback committed. Oracle VM restoring to ACTIVE.**" >> $GITHUB_STEP_SUMMARY
 
