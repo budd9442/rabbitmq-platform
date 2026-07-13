@@ -60,6 +60,16 @@ resource "tencentcloud_security_group_rule" "ingress_https" {
   description       = "Allow HTTPS web ingress"
 }
 
+resource "tencentcloud_security_group_rule" "ingress_amqp" {
+  security_group_id = tencentcloud_security_group.sg.id
+  type              = "ingress"
+  cidr_ip           = "0.0.0.0/0"
+  ip_protocol       = "tcp"
+  port_range        = "5672"
+  policy            = "accept"
+  description       = "Allow AMQP connection traffic"
+}
+
 resource "tencentcloud_security_group_rule" "egress_all" {
   security_group_id = tencentcloud_security_group.sg.id
   type              = "egress"
