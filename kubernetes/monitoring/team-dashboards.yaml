@@ -81,7 +81,7 @@ data:
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
           "targets": [
             {
-              "expr": "sum(rate(rabbitmq_queue_messages_published_total{vhost=\"vhost_orders\"}[1m]))",
+              "expr": "sum(rate(rabbitmq_queue_messages_published_total{queue_vhost=\"vhost_orders\"}[1m]))",
               "legendFormat": "Publish Rate (msg/s)",
               "refId": "A"
             },
@@ -296,7 +296,7 @@ data:
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
           "targets": [
             {
-              "expr": "sum(rate(rabbitmq_queue_messages_published_total{vhost=\"vhost_payments\"}[1m]))",
+              "expr": "sum(rate(rabbitmq_queue_messages_published_total{queue_vhost=\"vhost_payments\"}[1m]))",
               "legendFormat": "Publish Rate (msg/s)",
               "refId": "A"
             },
@@ -511,7 +511,7 @@ data:
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
           "targets": [
             {
-              "expr": "sum(rate(rabbitmq_queue_messages_published_total{vhost=\"vhost_notifications\"}[1m]))",
+              "expr": "sum(rate(rabbitmq_queue_messages_published_total{queue_vhost=\"vhost_notifications\"}[1m]))",
               "legendFormat": "Publish Rate (msg/s)",
               "refId": "A"
             },
