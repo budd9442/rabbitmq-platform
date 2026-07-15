@@ -1,0 +1,515 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orders-observability-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_dashboard_folder: "Orders Team"
+data:
+  orders-observability.json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "id": 1,
+          "title": "Active Consumers (Orders)",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 0, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_detailed_queue_consumers{vhost=\"vhost_orders\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 2,
+          "title": "Overall Message Publish Rate",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 8, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rate(rabbitmq_detailed_queue_messages_published_total{vhost=\"vhost_orders\"}[1m]))",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 3,
+          "title": "Cluster Nodes Count",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 16, "y": 0 },
+          "targets": [
+            {
+              "expr": "count(rabbitmq_identity_info{job=\"rabbitmq-prod\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 4,
+          "title": "Throughput Publish vs Deliver Rate",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+          "targets": [
+            {
+              "expr": "sum(rate(rabbitmq_detailed_queue_messages_published_total{vhost=\"vhost_orders\"}[1m]))",
+              "legendFormat": "Publish Rate",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(rate(rabbitmq_detailed_queue_messages_delivered_total{vhost=\"vhost_orders\"}[1m]))",
+              "legendFormat": "Deliver Rate",
+              "refId": "B"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": ["rabbitmq", "orders"],
+      "time": { "from": "now-1h", "to": "now" },
+      "title": "Orders Observability",
+      "version": 1
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orders-investigation-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_dashboard_folder: "Orders Team"
+data:
+  orders-queue-investigation.json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "id": 1,
+          "title": "Primary Queue Volume (order_validation_q)",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 12, "x": 0, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_orders\", queue=\"order_validation_q\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 2,
+          "title": "DLQ Volume (order_validation_dlq)",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 12, "x": 12, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_orders\", queue=\"order_validation_dlq\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 3,
+          "title": "Queue Message Volumes",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_orders\"}) by (queue)",
+              "legendFormat": "{{queue}}",
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": ["rabbitmq", "orders"],
+      "time": { "from": "now-1h", "to": "now" },
+      "title": "Orders Queue Investigation",
+      "version": 1
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payments-observability-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_dashboard_folder: "Payments Team"
+data:
+  payments-observability.json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "id": 1,
+          "title": "Active Consumers (Payments)",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 0, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_detailed_queue_consumers{vhost=\"vhost_payments\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 2,
+          "title": "Overall Message Publish Rate",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 8, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rate(rabbitmq_detailed_queue_messages_published_total{vhost=\"vhost_payments\"}[1m]))",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 3,
+          "title": "Cluster Nodes Count",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 16, "y": 0 },
+          "targets": [
+            {
+              "expr": "count(rabbitmq_identity_info{job=\"rabbitmq-prod\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 4,
+          "title": "Throughput Publish vs Deliver Rate",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+          "targets": [
+            {
+              "expr": "sum(rate(rabbitmq_detailed_queue_messages_published_total{vhost=\"vhost_payments\"}[1m]))",
+              "legendFormat": "Publish Rate",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(rate(rabbitmq_detailed_queue_messages_delivered_total{vhost=\"vhost_payments\"}[1m]))",
+              "legendFormat": "Deliver Rate",
+              "refId": "B"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": ["rabbitmq", "payments"],
+      "time": { "from": "now-1h", "to": "now" },
+      "title": "Payments Observability",
+      "version": 1
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payments-investigation-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_dashboard_folder: "Payments Team"
+data:
+  payments-queue-investigation.json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "id": 1,
+          "title": "Primary Queue Volume (stripe_processing_q)",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 12, "x": 0, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_payments\", queue=\"stripe_processing_q\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 2,
+          "title": "DLQ Volume (payment_failure_dlq)",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 12, "x": 12, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_payments\", queue=\"payment_failure_dlq\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 3,
+          "title": "Queue Message Volumes",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_payments\"}) by (queue)",
+              "legendFormat": "{{queue}}",
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 4,
+          "title": "Stripe Retry Redelivery Rate (Timeout Loops)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 },
+          "targets": [
+            {
+              "expr": "sum(rate(rabbitmq_detailed_queue_messages_redelivered_total{vhost=\"vhost_payments\"}[1m])) by (queue)",
+              "legendFormat": "{{queue}} Redelivery",
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": ["rabbitmq", "payments"],
+      "time": { "from": "now-1h", "to": "now" },
+      "title": "Payments Queue Investigation",
+      "version": 1
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notifications-observability-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_dashboard_folder: "Notifications Team"
+data:
+  notifications-observability.json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "id": 1,
+          "title": "Active Consumers (Notifications)",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 0, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_detailed_queue_consumers{vhost=\"vhost_notifications\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 2,
+          "title": "Overall Message Publish Rate",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 8, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rate(rabbitmq_detailed_queue_messages_published_total{vhost=\"vhost_notifications\"}[1m]))",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 3,
+          "title": "Cluster Nodes Count",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 16, "y": 0 },
+          "targets": [
+            {
+              "expr": "count(rabbitmq_identity_info{job=\"rabbitmq-prod\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 4,
+          "title": "Throughput Publish vs Deliver Rate",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+          "targets": [
+            {
+              "expr": "sum(rate(rabbitmq_detailed_queue_messages_published_total{vhost=\"vhost_notifications\"}[1m]))",
+              "legendFormat": "Publish Rate",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(rate(rabbitmq_detailed_queue_messages_delivered_total{vhost=\"vhost_notifications\"}[1m]))",
+              "legendFormat": "Deliver Rate",
+              "refId": "B"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": ["rabbitmq", "notifications"],
+      "time": { "from": "now-1h", "to": "now" },
+      "title": "Notifications Observability",
+      "version": 1
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notifications-investigation-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana_dashboard_folder: "Notifications Team"
+data:
+  notifications-queue-investigation.json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "id": 1,
+          "title": "Email Queue Volume (email_q)",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 0, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_notifications\", queue=\"email_q\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 2,
+          "title": "SMS Queue Volume (sms_q)",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 8, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_notifications\", queue=\"sms_q\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 3,
+          "title": "DLQ Volume (notification-dlq)",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 16, "y": 0 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_notifications\", queue=\"notification-dlq\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 4,
+          "title": "Queue Message Volumes",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_notifications\"}) by (queue)",
+              "legendFormat": "{{queue}}",
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 39,
+      "tags": ["rabbitmq", "notifications"],
+      "time": { "from": "now-1h", "to": "now" },
+      "title": "Notifications Queue Investigation",
+      "version": 1
+    }
