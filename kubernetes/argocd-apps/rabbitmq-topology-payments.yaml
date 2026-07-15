@@ -6,9 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/budd9442/rmq.git'
+    repoURL: 'https://github.com/budd9442/payments-rabbitmq-topology.git'
     targetRevision: HEAD
-    path: kubernetes/payments-rabbitmq-topology
+    path: .
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: payments-system

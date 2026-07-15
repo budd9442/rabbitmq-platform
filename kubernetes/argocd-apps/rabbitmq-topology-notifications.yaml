@@ -6,9 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/budd9442/rmq.git'
+    repoURL: 'https://github.com/budd9442/notifications-rabbitmq-topology.git'
     targetRevision: HEAD
-    path: kubernetes/notifications-rabbitmq-topology
+    path: .
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: notifications-system

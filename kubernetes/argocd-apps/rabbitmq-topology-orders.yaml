@@ -6,9 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/budd9442/rmq.git'
+    repoURL: 'https://github.com/budd9442/orders-rabbitmq-topology.git'
     targetRevision: HEAD
-    path: kubernetes/orders-rabbitmq-topology
+    path: .
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: orders-system
