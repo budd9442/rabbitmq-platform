@@ -3,6 +3,8 @@ kind: RabbitmqCluster
 metadata:
   name: rabbitmq-prod
   namespace: rabbitmq
+  annotations:
+    rabbitmq.com/topology-allowed-namespaces: "orders-system,payments-system,notifications-system"
 spec:
   replicas: 3
   resources:
