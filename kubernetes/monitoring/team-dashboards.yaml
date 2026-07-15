@@ -22,10 +22,10 @@ data:
           "id": 1,
           "title": "Active Consumers (Orders)",
           "type": "stat",
-          "gridPos": { "h": 4, "w": 8, "x": 0, "y": 0 },
+          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_detailed_queue_consumers{vhost=\"vhost_orders\"})",
+              "expr": "sum(rabbitmq_queue_consumers{vhost=\"vhost_orders\"})",
               "instant": true,
               "refId": "A"
             }
@@ -34,12 +34,12 @@ data:
         },
         {
           "id": 2,
-          "title": "Overall Message Publish Rate",
+          "title": "Total Messages in VHost",
           "type": "stat",
-          "gridPos": { "h": 4, "w": 8, "x": 8, "y": 0 },
+          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rate(rabbitmq_detailed_queue_messages_published_total{vhost=\"vhost_orders\"}[1m]))",
+              "expr": "sum(rabbitmq_queue_messages{vhost=\"vhost_orders\"})",
               "instant": true,
               "refId": "A"
             }
@@ -48,12 +48,12 @@ data:
         },
         {
           "id": 3,
-          "title": "Cluster Nodes Count",
+          "title": "Messages Ready",
           "type": "stat",
-          "gridPos": { "h": 4, "w": 8, "x": 16, "y": 0 },
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
           "targets": [
             {
-              "expr": "count(rabbitmq_identity_info{job=\"rabbitmq-prod\"})",
+              "expr": "sum(rabbitmq_queue_messages_ready{vhost=\"vhost_orders\"})",
               "instant": true,
               "refId": "A"
             }
@@ -62,21 +62,68 @@ data:
         },
         {
           "id": 4,
-          "title": "Throughput Publish vs Deliver Rate",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+          "title": "Messages Unacknowledged",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rate(rabbitmq_detailed_queue_messages_published_total{vhost=\"vhost_orders\"}[1m]))",
-              "legendFormat": "Publish Rate",
+              "expr": "sum(rabbitmq_queue_messages_unacked{vhost=\"vhost_orders\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 5,
+          "title": "Messaging Throughput Rates",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+          "targets": [
+            {
+              "expr": "sum(rate(rabbitmq_queue_messages_published_total{vhost=\"vhost_orders\"}[1m]))",
+              "legendFormat": "Publish Rate (msg/s)",
               "refId": "A"
             },
             {
-              "expr": "sum(rate(rabbitmq_detailed_queue_messages_delivered_total{vhost=\"vhost_orders\"}[1m]))",
-              "legendFormat": "Deliver Rate",
+              "expr": "sum(rate(rabbitmq_queue_messages_delivered_total{vhost=\"vhost_orders\"}[1m]))",
+              "legendFormat": "Deliver Rate (msg/s)",
               "refId": "B"
             }
           ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 6,
+          "title": "Redelivered / Requeued Rates",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+          "targets": [
+            {
+              "expr": "sum(rate(rabbitmq_queue_messages_redelivered_total{vhost=\"vhost_orders\"}[1m]))",
+              "legendFormat": "Redelivered (msg/s)",
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 7,
+          "title": "Queue Memory Consumption",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_queue_process_memory_bytes{vhost=\"vhost_orders\"}) by (queue)",
+              "legendFormat": "{{queue}} memory",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "decbytes"
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         }
       ],
@@ -111,13 +158,13 @@ data:
       "panels": [
         {
           "id": 1,
-          "title": "Primary Queue Volume (order_validation_q)",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 12, "x": 0, "y": 0 },
+          "title": "Queue Message Volumes",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_orders\", queue=\"order_validation_q\"})",
-              "instant": true,
+              "expr": "rabbitmq_queue_messages{vhost=\"vhost_orders\"}",
+              "legendFormat": "{{queue}} Messages",
               "refId": "A"
             }
           ],
@@ -125,13 +172,13 @@ data:
         },
         {
           "id": 2,
-          "title": "DLQ Volume (order_validation_dlq)",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 12, "x": 12, "y": 0 },
+          "title": "Consumers per Queue",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_orders\", queue=\"order_validation_dlq\"})",
-              "instant": true,
+              "expr": "rabbitmq_queue_consumers{vhost=\"vhost_orders\"}",
+              "legendFormat": "{{queue}} Consumers",
               "refId": "A"
             }
           ],
@@ -139,14 +186,19 @@ data:
         },
         {
           "id": 3,
-          "title": "Queue Message Volumes",
+          "title": "Queue Disk Writes and Reads",
           "type": "timeseries",
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_orders\"}) by (queue)",
-              "legendFormat": "{{queue}}",
+              "expr": "sum(rate(rabbitmq_queue_disk_writes_total{vhost=\"vhost_orders\"}[1m])) by (queue)",
+              "legendFormat": "{{queue}} Disk Writes",
               "refId": "A"
+            },
+            {
+              "expr": "sum(rate(rabbitmq_queue_disk_reads_total{vhost=\"vhost_orders\"}[1m])) by (queue)",
+              "legendFormat": "{{queue}} Disk Reads",
+              "refId": "B"
             }
           ],
           "datasource": { "type": "prometheus", "uid": "prometheus" }
@@ -185,10 +237,10 @@ data:
           "id": 1,
           "title": "Active Consumers (Payments)",
           "type": "stat",
-          "gridPos": { "h": 4, "w": 8, "x": 0, "y": 0 },
+          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_detailed_queue_consumers{vhost=\"vhost_payments\"})",
+              "expr": "sum(rabbitmq_queue_consumers{vhost=\"vhost_payments\"})",
               "instant": true,
               "refId": "A"
             }
@@ -197,12 +249,12 @@ data:
         },
         {
           "id": 2,
-          "title": "Overall Message Publish Rate",
+          "title": "Total Messages in VHost",
           "type": "stat",
-          "gridPos": { "h": 4, "w": 8, "x": 8, "y": 0 },
+          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rate(rabbitmq_detailed_queue_messages_published_total{vhost=\"vhost_payments\"}[1m]))",
+              "expr": "sum(rabbitmq_queue_messages{vhost=\"vhost_payments\"})",
               "instant": true,
               "refId": "A"
             }
@@ -211,12 +263,12 @@ data:
         },
         {
           "id": 3,
-          "title": "Cluster Nodes Count",
+          "title": "Messages Ready",
           "type": "stat",
-          "gridPos": { "h": 4, "w": 8, "x": 16, "y": 0 },
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
           "targets": [
             {
-              "expr": "count(rabbitmq_identity_info{job=\"rabbitmq-prod\"})",
+              "expr": "sum(rabbitmq_queue_messages_ready{vhost=\"vhost_payments\"})",
               "instant": true,
               "refId": "A"
             }
@@ -225,21 +277,68 @@ data:
         },
         {
           "id": 4,
-          "title": "Throughput Publish vs Deliver Rate",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+          "title": "Messages Unacknowledged",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rate(rabbitmq_detailed_queue_messages_published_total{vhost=\"vhost_payments\"}[1m]))",
-              "legendFormat": "Publish Rate",
+              "expr": "sum(rabbitmq_queue_messages_unacked{vhost=\"vhost_payments\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 5,
+          "title": "Messaging Throughput Rates",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+          "targets": [
+            {
+              "expr": "sum(rate(rabbitmq_queue_messages_published_total{vhost=\"vhost_payments\"}[1m]))",
+              "legendFormat": "Publish Rate (msg/s)",
               "refId": "A"
             },
             {
-              "expr": "sum(rate(rabbitmq_detailed_queue_messages_delivered_total{vhost=\"vhost_payments\"}[1m]))",
-              "legendFormat": "Deliver Rate",
+              "expr": "sum(rate(rabbitmq_queue_messages_delivered_total{vhost=\"vhost_payments\"}[1m]))",
+              "legendFormat": "Deliver Rate (msg/s)",
               "refId": "B"
             }
           ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 6,
+          "title": "Redelivered / Requeued Rates",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+          "targets": [
+            {
+              "expr": "sum(rate(rabbitmq_queue_messages_redelivered_total{vhost=\"vhost_payments\"}[1m]))",
+              "legendFormat": "Redelivered (msg/s)",
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 7,
+          "title": "Queue Memory Consumption",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_queue_process_memory_bytes{vhost=\"vhost_payments\"}) by (queue)",
+              "legendFormat": "{{queue}} memory",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "decbytes"
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         }
       ],
@@ -274,13 +373,13 @@ data:
       "panels": [
         {
           "id": 1,
-          "title": "Primary Queue Volume (stripe_processing_q)",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 12, "x": 0, "y": 0 },
+          "title": "Queue Message Volumes",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_payments\", queue=\"stripe_processing_q\"})",
-              "instant": true,
+              "expr": "rabbitmq_queue_messages{vhost=\"vhost_payments\"}",
+              "legendFormat": "{{queue}} Messages",
               "refId": "A"
             }
           ],
@@ -288,13 +387,13 @@ data:
         },
         {
           "id": 2,
-          "title": "DLQ Volume (payment_failure_dlq)",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 12, "x": 12, "y": 0 },
+          "title": "Consumers per Queue",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_payments\", queue=\"payment_failure_dlq\"})",
-              "instant": true,
+              "expr": "rabbitmq_queue_consumers{vhost=\"vhost_payments\"}",
+              "legendFormat": "{{queue}} Consumers",
               "refId": "A"
             }
           ],
@@ -302,28 +401,19 @@ data:
         },
         {
           "id": 3,
-          "title": "Queue Message Volumes",
+          "title": "Queue Disk Writes and Reads",
           "type": "timeseries",
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_payments\"}) by (queue)",
-              "legendFormat": "{{queue}}",
+              "expr": "sum(rate(rabbitmq_queue_disk_writes_total{vhost=\"vhost_payments\"}[1m])) by (queue)",
+              "legendFormat": "{{queue}} Disk Writes",
               "refId": "A"
-            }
-          ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 4,
-          "title": "Stripe Retry Redelivery Rate (Timeout Loops)",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 },
-          "targets": [
+            },
             {
-              "expr": "sum(rate(rabbitmq_detailed_queue_messages_redelivered_total{vhost=\"vhost_payments\"}[1m])) by (queue)",
-              "legendFormat": "{{queue}} Redelivery",
-              "refId": "A"
+              "expr": "sum(rate(rabbitmq_queue_disk_reads_total{vhost=\"vhost_payments\"}[1m])) by (queue)",
+              "legendFormat": "{{queue}} Disk Reads",
+              "refId": "B"
             }
           ],
           "datasource": { "type": "prometheus", "uid": "prometheus" }
@@ -362,10 +452,10 @@ data:
           "id": 1,
           "title": "Active Consumers (Notifications)",
           "type": "stat",
-          "gridPos": { "h": 4, "w": 8, "x": 0, "y": 0 },
+          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_detailed_queue_consumers{vhost=\"vhost_notifications\"})",
+              "expr": "sum(rabbitmq_queue_consumers{vhost=\"vhost_notifications\"})",
               "instant": true,
               "refId": "A"
             }
@@ -374,12 +464,12 @@ data:
         },
         {
           "id": 2,
-          "title": "Overall Message Publish Rate",
+          "title": "Total Messages in VHost",
           "type": "stat",
-          "gridPos": { "h": 4, "w": 8, "x": 8, "y": 0 },
+          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rate(rabbitmq_detailed_queue_messages_published_total{vhost=\"vhost_notifications\"}[1m]))",
+              "expr": "sum(rabbitmq_queue_messages{vhost=\"vhost_notifications\"})",
               "instant": true,
               "refId": "A"
             }
@@ -388,12 +478,12 @@ data:
         },
         {
           "id": 3,
-          "title": "Cluster Nodes Count",
+          "title": "Messages Ready",
           "type": "stat",
-          "gridPos": { "h": 4, "w": 8, "x": 16, "y": 0 },
+          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
           "targets": [
             {
-              "expr": "count(rabbitmq_identity_info{job=\"rabbitmq-prod\"})",
+              "expr": "sum(rabbitmq_queue_messages_ready{vhost=\"vhost_notifications\"})",
               "instant": true,
               "refId": "A"
             }
@@ -402,21 +492,68 @@ data:
         },
         {
           "id": 4,
-          "title": "Throughput Publish vs Deliver Rate",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+          "title": "Messages Unacknowledged",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rate(rabbitmq_detailed_queue_messages_published_total{vhost=\"vhost_notifications\"}[1m]))",
-              "legendFormat": "Publish Rate",
+              "expr": "sum(rabbitmq_queue_messages_unacked{vhost=\"vhost_notifications\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 5,
+          "title": "Messaging Throughput Rates",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+          "targets": [
+            {
+              "expr": "sum(rate(rabbitmq_queue_messages_published_total{vhost=\"vhost_notifications\"}[1m]))",
+              "legendFormat": "Publish Rate (msg/s)",
               "refId": "A"
             },
             {
-              "expr": "sum(rate(rabbitmq_detailed_queue_messages_delivered_total{vhost=\"vhost_notifications\"}[1m]))",
-              "legendFormat": "Deliver Rate",
+              "expr": "sum(rate(rabbitmq_queue_messages_delivered_total{vhost=\"vhost_notifications\"}[1m]))",
+              "legendFormat": "Deliver Rate (msg/s)",
               "refId": "B"
             }
           ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 6,
+          "title": "Redelivered / Requeued Rates",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+          "targets": [
+            {
+              "expr": "sum(rate(rabbitmq_queue_messages_redelivered_total{vhost=\"vhost_notifications\"}[1m]))",
+              "legendFormat": "Redelivered (msg/s)",
+              "refId": "A"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 7,
+          "title": "Queue Memory Consumption",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 },
+          "targets": [
+            {
+              "expr": "sum(rabbitmq_queue_process_memory_bytes{vhost=\"vhost_notifications\"}) by (queue)",
+              "legendFormat": "{{queue}} memory",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "decbytes"
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         }
       ],
@@ -451,13 +588,13 @@ data:
       "panels": [
         {
           "id": 1,
-          "title": "Email Queue Volume (email_q)",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 8, "x": 0, "y": 0 },
+          "title": "Queue Message Volumes",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_notifications\", queue=\"email_q\"})",
-              "instant": true,
+              "expr": "rabbitmq_queue_messages{vhost=\"vhost_notifications\"}",
+              "legendFormat": "{{queue}} Messages",
               "refId": "A"
             }
           ],
@@ -465,13 +602,13 @@ data:
         },
         {
           "id": 2,
-          "title": "SMS Queue Volume (sms_q)",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 8, "x": 8, "y": 0 },
+          "title": "Consumers per Queue",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_notifications\", queue=\"sms_q\"})",
-              "instant": true,
+              "expr": "rabbitmq_queue_consumers{vhost=\"vhost_notifications\"}",
+              "legendFormat": "{{queue}} Consumers",
               "refId": "A"
             }
           ],
@@ -479,28 +616,19 @@ data:
         },
         {
           "id": 3,
-          "title": "DLQ Volume (notification-dlq)",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 8, "x": 16, "y": 0 },
-          "targets": [
-            {
-              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_notifications\", queue=\"notification-dlq\"})",
-              "instant": true,
-              "refId": "A"
-            }
-          ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 4,
-          "title": "Queue Message Volumes",
+          "title": "Queue Disk Writes and Reads",
           "type": "timeseries",
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_detailed_queue_messages{vhost=\"vhost_notifications\"}) by (queue)",
-              "legendFormat": "{{queue}}",
+              "expr": "sum(rate(rabbitmq_queue_disk_writes_total{vhost=\"vhost_notifications\"}[1m])) by (queue)",
+              "legendFormat": "{{queue}} Disk Writes",
               "refId": "A"
+            },
+            {
+              "expr": "sum(rate(rabbitmq_queue_disk_reads_total{vhost=\"vhost_notifications\"}[1m])) by (queue)",
+              "legendFormat": "{{queue}} Disk Reads",
+              "refId": "B"
             }
           ],
           "datasource": { "type": "prometheus", "uid": "prometheus" }

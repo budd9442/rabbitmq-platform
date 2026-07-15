@@ -21,6 +21,7 @@ spec:
     additionalConfig: |
       # Enforce all queues to default to Quorum Queues
       default_queue_type = quorum
+      prometheus.return_per_object_metrics = true
     additionalPlugins:
       - rabbitmq_shovel
       - rabbitmq_shovel_management
