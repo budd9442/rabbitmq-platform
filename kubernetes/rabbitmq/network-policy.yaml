@@ -25,6 +25,15 @@ spec:
     - namespaceSelector:
         matchLabels:
           kubernetes.io/metadata.name: monitoring
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: orders-system
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: payments-system
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: notifications-system
     - podSelector: {}
     - ipBlock:
         cidr: 10.0.0.0/16

@@ -1,0 +1,192 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: payments-app-sa
+  namespace: payments-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: payments-secret-reader
+  namespace: payments-system
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  resourceNames: ["payments-svc-credentials"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: payments-secret-reader-binding
+  namespace: payments-system
+subjects:
+- kind: ServiceAccount
+  name: payments-app-sa
+  namespace: payments-system
+roleRef:
+  kind: Role
+  name: payments-secret-reader
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payments-app-code
+  namespace: payments-system
+data:
+  app.py: |
+    import pika
+    import time
+    import json
+    import os
+    import sys
+    import threading
+
+    host = os.environ.get("RABBITMQ_HOST", "rabbitmq-prod.rabbitmq.svc.cluster.local")
+    username = os.environ.get("RABBITMQ_USER", "payments-svc-user")
+    password = os.environ.get("RABBITMQ_PASS", "payments_pass_secret_456!")
+    vhost = "vhost_payments"
+
+    print(f"Connecting to RabbitMQ at {host}:{5672}/{vhost} as user '{username}'...")
+    credentials = pika.PlainCredentials(username, password)
+    parameters = pika.ConnectionParameters(host, 5672, vhost, credentials)
+
+    # Establish connection
+    connection = None
+    for i in range(15):
+        try:
+            connection = pika.BlockingConnection(parameters)
+            break
+        except Exception as e:
+            print(f"Failed to connect: {e}. Retrying in 3s...")
+            time.sleep(3)
+
+    if not connection:
+        print("Could not connect to RabbitMQ. Exiting.")
+        sys.exit(1)
+
+    channel = connection.channel()
+    print("Connected successfully!")
+
+    def callback(ch, method, properties, body):
+        # Extract delivery count from headers
+        delivery_count = 0
+        if properties.headers and "x-delivery-count" in properties.headers:
+            delivery_count = properties.headers["x-delivery-count"]
+        
+        print(f" [Consumer] Received Stripe charge request: {body.decode()}")
+        print(f"            x-delivery-count: {delivery_count}")
+        
+        # Throttle processing to avoid tight redelivery loop
+        time.sleep(1.0)
+        
+        print(" [Consumer] Simulating Stripe gateway timeout. Rejecting with requeue=True...")
+        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+
+    channel.basic_qos(prefetch_count=1)
+    channel.basic_consume(queue="stripe_processing_q", on_message_callback=callback)
+
+    def run_consumer():
+        print("Starting consumer thread...")
+        try:
+            channel.start_consuming()
+        except Exception as e:
+            print(f"Consumer error: {e}")
+
+    consumer_thread = threading.Thread(target=run_consumer, daemon=True)
+    consumer_thread.start()
+
+    # Publisher loop
+    time.sleep(2)
+    pub_conn = None
+    for i in range(5):
+        try:
+            pub_conn = pika.BlockingConnection(parameters)
+            break
+        except Exception:
+            time.sleep(2)
+            
+    if not pub_conn:
+        print("Failed to start publisher connection. Exiting.")
+        sys.exit(1)
+
+    pub_chan = pub_conn.channel()
+    pub_chan.confirm_delivery()
+
+    tx_id = 1
+    while True:
+        time.sleep(2.0)
+        payload = {
+            "tx_id": f"tx-{tx_id}",
+            "amount": 250.0,
+            "gateway": "stripe",
+            "timestamp": time.time()
+        }
+        body = json.dumps(payload)
+        try:
+            pub_chan.basic_publish(
+                exchange="payment_commands",
+                routing_key="stripe",
+                body=body,
+                properties=pika.BasicProperties(
+                    delivery_mode=2
+                )
+            )
+            print(f" [Publisher] Published Stripe transaction {tx_id} to payment_commands")
+            tx_id += 1
+        except Exception as e:
+            print(f" [Publisher] Failed to send: {e}")
+            try:
+                pub_conn = pika.BlockingConnection(parameters)
+                pub_chan = pub_conn.channel()
+                pub_chan.confirm_delivery()
+            except Exception:
+                pass
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-app
+  namespace: payments-system
+  labels:
+    app: payments-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payments-app
+  template:
+    metadata:
+      labels:
+        app: payments-app
+    spec:
+      serviceAccountName: payments-app-sa
+      containers:
+      - name: python-app
+        image: python:3.11-slim
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          pip install pika
+          python /app/app.py
+        env:
+        - name: RABBITMQ_HOST
+          value: rabbitmq-prod.rabbitmq.svc.cluster.local
+        - name: RABBITMQ_USER
+          valueFrom:
+            secretKeyRef:
+              name: payments-svc-credentials
+              key: username
+        - name: RABBITMQ_PASS
+          valueFrom:
+            secretKeyRef:
+              name: payments-svc-credentials
+              key: password
+        volumeMounts:
+        - name: app-volume
+          mountPath: /app
+      volumes:
+      - name: app-volume
+        configMap:
+          name: payments-app-code

@@ -1,0 +1,196 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: notifications-app-sa
+  namespace: notifications-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: notifications-secret-reader
+  namespace: notifications-system
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  resourceNames: ["notifications-svc-credentials"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: notifications-secret-reader-binding
+  namespace: notifications-system
+subjects:
+- kind: ServiceAccount
+  name: notifications-app-sa
+  namespace: notifications-system
+roleRef:
+  kind: Role
+  name: notifications-secret-reader
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notifications-app-code
+  namespace: notifications-system
+data:
+  app.py: |
+    import pika
+    import time
+    import json
+    import os
+    import sys
+    import threading
+
+    host = os.environ.get("RABBITMQ_HOST", "rabbitmq-prod.rabbitmq.svc.cluster.local")
+    username = os.environ.get("RABBITMQ_USER", "notifications-svc-user")
+    password = os.environ.get("RABBITMQ_PASS", "notifications_pass_secret_789!")
+    vhost = "vhost_notifications"
+
+    print(f"Connecting to RabbitMQ at {host}:{5672}/{vhost} as user '{username}'...")
+    credentials = pika.PlainCredentials(username, password)
+    parameters = pika.ConnectionParameters(host, 5672, vhost, credentials)
+
+    # Establish connection
+    connection = None
+    for i in range(15):
+        try:
+            connection = pika.BlockingConnection(parameters)
+            break
+        except Exception as e:
+            print(f"Failed to connect: {e}. Retrying in 3s...")
+            time.sleep(3)
+
+    if not connection:
+        print("Could not connect to RabbitMQ. Exiting.")
+        sys.exit(1)
+
+    # Consumer callbacks
+    def email_callback(ch, method, properties, body):
+        data = json.loads(body.decode())
+        print(f" [Email Consumer] Processed notification: seq={data.get('seq')}, alert_id={data.get('alert_id')}")
+        time.sleep(1.0)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+
+    def sms_callback(ch, method, properties, body):
+        data = json.loads(body.decode())
+        print(f" [SMS Consumer] Processed notification: seq={data.get('seq')}, alert_id={data.get('alert_id')}")
+        time.sleep(1.0)
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+
+    def run_email_consumer():
+        print("Email Consumer sleeping for 20s to allow queue to overflow (max-length: 10)...")
+        time.sleep(20.0)
+        
+        conn = pika.BlockingConnection(parameters)
+        ch = conn.channel()
+        ch.basic_qos(prefetch_count=1)
+        ch.basic_consume(queue="email_q", on_message_callback=email_callback)
+        print("Email Consumer started consuming.")
+        try:
+            ch.start_consuming()
+        except Exception as e:
+            print(f"Email Consumer error: {e}")
+
+    def run_sms_consumer():
+        print("SMS Consumer sleeping for 20s to allow queue to overflow (max-length: 10)...")
+        time.sleep(20.0)
+        
+        conn = pika.BlockingConnection(parameters)
+        ch = conn.channel()
+        ch.basic_qos(prefetch_count=1)
+        ch.basic_consume(queue="sms_q", on_message_callback=sms_callback)
+        print("SMS Consumer started consuming.")
+        try:
+            ch.start_consuming()
+        except Exception as e:
+            print(f"SMS Consumer error: {e}")
+
+    # Start consumers in threads
+    email_thread = threading.Thread(target=run_email_consumer, daemon=True)
+    sms_thread = threading.Thread(target=run_sms_consumer, daemon=True)
+    email_thread.start()
+    sms_thread.start()
+
+    # Publisher loop
+    pub_conn = pika.BlockingConnection(parameters)
+    pub_chan = pub_conn.channel()
+    pub_chan.confirm_delivery()
+
+    seq = 1
+    while True:
+        time.sleep(0.2)
+        payload = {
+            "alert_id": f"alert-{seq}",
+            "text": "System alert notification",
+            "seq": seq,
+            "timestamp": time.time()
+        }
+        body = json.dumps(payload)
+        try:
+            pub_chan.basic_publish(
+                exchange="notification_broadcast",
+                routing_key="",
+                body=body,
+                properties=pika.BasicProperties(
+                    delivery_mode=2
+                )
+            )
+            print(f" [Publisher] Broadcast alert: seq={seq}")
+            seq += 1
+        except Exception as e:
+            print(f" [Publisher] Failed to send: {e}")
+            try:
+                pub_conn = pika.BlockingConnection(parameters)
+                pub_chan = pub_conn.channel()
+                pub_chan.confirm_delivery()
+            except Exception:
+                pass
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifications-app
+  namespace: notifications-system
+  labels:
+    app: notifications-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notifications-app
+  template:
+    metadata:
+      labels:
+        app: notifications-app
+    spec:
+      serviceAccountName: notifications-app-sa
+      containers:
+      - name: python-app
+        image: python:3.11-slim
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          pip install pika
+          python /app/app.py
+        env:
+        - name: RABBITMQ_HOST
+          value: rabbitmq-prod.rabbitmq.svc.cluster.local
+        - name: RABBITMQ_USER
+          valueFrom:
+            secretKeyRef:
+              name: notifications-svc-credentials
+              key: username
+        - name: RABBITMQ_PASS
+          valueFrom:
+            secretKeyRef:
+              name: notifications-svc-credentials
+              key: password
+        volumeMounts:
+        - name: app-volume
+          mountPath: /app
+      volumes:
+      - name: app-volume
+        configMap:
+          name: notifications-app-code
