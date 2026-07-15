@@ -86,7 +86,7 @@ data:
               "refId": "A"
             },
             {
-              "expr": "sum(rate(rabbitmq_queue_messages_delivered_total{vhost=\"vhost_orders\"}[1m]))",
+              "expr": "sum(rate(rabbitmq_queue_messages_delivered_ack_total{vhost=\"vhost_orders\"}[1m]))",
               "legendFormat": "Deliver Rate (msg/s)",
               "refId": "B"
             }
@@ -301,7 +301,7 @@ data:
               "refId": "A"
             },
             {
-              "expr": "sum(rate(rabbitmq_queue_messages_delivered_total{vhost=\"vhost_payments\"}[1m]))",
+              "expr": "sum(rate(rabbitmq_queue_messages_delivered_ack_total{vhost=\"vhost_payments\"}[1m]))",
               "legendFormat": "Deliver Rate (msg/s)",
               "refId": "B"
             }
@@ -516,7 +516,7 @@ data:
               "refId": "A"
             },
             {
-              "expr": "sum(rate(rabbitmq_queue_messages_delivered_total{vhost=\"vhost_notifications\"}[1m]))",
+              "expr": "sum(rate(rabbitmq_queue_messages_delivered_ack_total{vhost=\"vhost_notifications\"}[1m]))",
               "legendFormat": "Deliver Rate (msg/s)",
               "refId": "B"
             }
