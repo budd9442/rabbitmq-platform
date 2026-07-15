@@ -30,6 +30,18 @@ data:
               "refId": "A"
             }
           ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "green", "value": 1 }
+                ]
+              }
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         },
         {
@@ -44,6 +56,19 @@ data:
               "refId": "A"
             }
           ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 50 },
+                  { "color": "red", "value": 200 }
+                ]
+              }
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         },
         {
@@ -58,6 +83,18 @@ data:
               "refId": "A"
             }
           ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 1 }
+                ]
+              }
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         },
         {
@@ -72,6 +109,19 @@ data:
               "refId": "A"
             }
           ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 50 },
+                  { "color": "red", "value": 200 }
+                ]
+              }
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         },
         {
@@ -168,6 +218,18 @@ data:
               "refId": "A"
             }
           ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "green", "value": 1 }
+                ]
+              }
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         },
         {
@@ -182,6 +244,19 @@ data:
               "refId": "A"
             }
           ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 50 },
+                  { "color": "red", "value": 200 }
+                ]
+              }
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         },
         {
@@ -196,6 +271,18 @@ data:
               "refId": "A"
             }
           ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 1 }
+                ]
+              }
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         },
         {
@@ -210,6 +297,19 @@ data:
               "refId": "A"
             }
           ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 50 },
+                  { "color": "red", "value": 200 }
+                ]
+              }
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         },
         {
@@ -306,6 +406,18 @@ data:
               "refId": "A"
             }
           ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "green", "value": 1 }
+                ]
+              }
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         },
         {
@@ -320,6 +432,19 @@ data:
               "refId": "A"
             }
           ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 50 },
+                  { "color": "red", "value": 200 }
+                ]
+              }
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         },
         {
@@ -334,6 +459,19 @@ data:
               "refId": "A"
             }
           ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 50 },
+                  { "color": "red", "value": 200 }
+                ]
+              }
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         },
         {
@@ -348,6 +486,18 @@ data:
               "refId": "A"
             }
           ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 1 }
+                ]
+              }
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         },
         {
@@ -362,6 +512,19 @@ data:
               "refId": "A"
             }
           ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 50 },
+                  { "color": "red", "value": 200 }
+                ]
+              }
+            }
+          },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         },
         {
