@@ -95,13 +95,13 @@ data:
         },
         {
           "id": 6,
-          "title": "DLQ Accumulation Rate",
+          "title": "Queue Message Volumes",
           "type": "timeseries",
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
           "targets": [
             {
-              "expr": "sum(rate(rabbitmq_queue_messages_published_total{queue_vhost=\"vhost_orders\", queue=\"order_validation_dlq\"}[1m]))",
-              "legendFormat": "DLQ Write Rate (msg/s)",
+              "expr": "rabbitmq_queue_messages{vhost=\"vhost_orders\"}",
+              "legendFormat": "{{queue}} Messages",
               "refId": "A"
             }
           ],
@@ -132,83 +132,6 @@ data:
       "tags": ["rabbitmq", "orders"],
       "time": { "from": "now-1h", "to": "now" },
       "title": "Orders Observability",
-      "version": 1
-    }
-
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: orders-investigation-dashboard
-  namespace: monitoring
-  labels:
-    grafana_dashboard: "1"
-  annotations:
-    grafana_dashboard_folder: "Orders Team"
-data:
-  orders-queue-investigation.json: |
-    {
-      "annotations": { "list": [] },
-      "editable": true,
-      "fiscalYearStartMonth": 0,
-      "graphTooltip": 0,
-      "id": null,
-      "links": [],
-      "liveNow": false,
-      "panels": [
-        {
-          "id": 1,
-          "title": "Queue Message Volumes",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
-          "targets": [
-            {
-              "expr": "rabbitmq_queue_messages{vhost=\"vhost_orders\"}",
-              "legendFormat": "{{queue}} Messages",
-              "refId": "A"
-            }
-          ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 2,
-          "title": "Consumers per Queue",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
-          "targets": [
-            {
-              "expr": "rabbitmq_queue_consumers{vhost=\"vhost_orders\"}",
-              "legendFormat": "{{queue}} Consumers",
-              "refId": "A"
-            }
-          ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 3,
-          "title": "Queue Disk Writes and Reads",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
-          "targets": [
-            {
-              "expr": "sum(rate(rabbitmq_queue_disk_writes_total{vhost=\"vhost_orders\"}[1m])) by (queue)",
-              "legendFormat": "{{queue}} Disk Writes",
-              "refId": "A"
-            },
-            {
-              "expr": "sum(rate(rabbitmq_queue_disk_reads_total{vhost=\"vhost_orders\"}[1m])) by (queue)",
-              "legendFormat": "{{queue}} Disk Reads",
-              "refId": "B"
-            }
-          ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        }
-      ],
-      "refresh": "10s",
-      "schemaVersion": 39,
-      "tags": ["rabbitmq", "orders"],
-      "time": { "from": "now-1h", "to": "now" },
-      "title": "Orders Queue Investigation",
       "version": 1
     }
 
@@ -310,13 +233,13 @@ data:
         },
         {
           "id": 6,
-          "title": "DLQ Failure Rate",
+          "title": "Queue Message Volumes",
           "type": "timeseries",
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
           "targets": [
             {
-              "expr": "sum(rate(rabbitmq_queue_messages_published_total{queue_vhost=\"vhost_payments\", queue=\"payment_failure_dlq\"}[1m]))",
-              "legendFormat": "DLQ Write Rate (msg/s)",
+              "expr": "rabbitmq_queue_messages{vhost=\"vhost_payments\"}",
+              "legendFormat": "{{queue}} Messages",
               "refId": "A"
             }
           ],
@@ -347,83 +270,6 @@ data:
       "tags": ["rabbitmq", "payments"],
       "time": { "from": "now-1h", "to": "now" },
       "title": "Payments Observability",
-      "version": 1
-    }
-
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: payments-investigation-dashboard
-  namespace: monitoring
-  labels:
-    grafana_dashboard: "1"
-  annotations:
-    grafana_dashboard_folder: "Payments Team"
-data:
-  payments-queue-investigation.json: |
-    {
-      "annotations": { "list": [] },
-      "editable": true,
-      "fiscalYearStartMonth": 0,
-      "graphTooltip": 0,
-      "id": null,
-      "links": [],
-      "liveNow": false,
-      "panels": [
-        {
-          "id": 1,
-          "title": "Queue Message Volumes",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
-          "targets": [
-            {
-              "expr": "rabbitmq_queue_messages{vhost=\"vhost_payments\"}",
-              "legendFormat": "{{queue}} Messages",
-              "refId": "A"
-            }
-          ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 2,
-          "title": "Consumers per Queue",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
-          "targets": [
-            {
-              "expr": "rabbitmq_queue_consumers{vhost=\"vhost_payments\"}",
-              "legendFormat": "{{queue}} Consumers",
-              "refId": "A"
-            }
-          ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 3,
-          "title": "Queue Disk Writes and Reads",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
-          "targets": [
-            {
-              "expr": "sum(rate(rabbitmq_queue_disk_writes_total{vhost=\"vhost_payments\"}[1m])) by (queue)",
-              "legendFormat": "{{queue}} Disk Writes",
-              "refId": "A"
-            },
-            {
-              "expr": "sum(rate(rabbitmq_queue_disk_reads_total{vhost=\"vhost_payments\"}[1m])) by (queue)",
-              "legendFormat": "{{queue}} Disk Reads",
-              "refId": "B"
-            }
-          ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        }
-      ],
-      "refresh": "10s",
-      "schemaVersion": 39,
-      "tags": ["rabbitmq", "payments"],
-      "time": { "from": "now-1h", "to": "now" },
-      "title": "Payments Queue Investigation",
       "version": 1
     }
 
@@ -539,13 +385,13 @@ data:
         },
         {
           "id": 7,
-          "title": "DLQ Overflow Rate",
+          "title": "Queue Message Volumes",
           "type": "timeseries",
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
           "targets": [
             {
-              "expr": "sum(rate(rabbitmq_queue_messages_published_total{queue_vhost=\"vhost_notifications\", queue=\"notification_dlq\"}[1m]))",
-              "legendFormat": "DLQ Overflow Rate (msg/s)",
+              "expr": "rabbitmq_queue_messages{vhost=\"vhost_notifications\"}",
+              "legendFormat": "{{queue}} Messages",
               "refId": "A"
             }
           ],
@@ -576,82 +422,5 @@ data:
       "tags": ["rabbitmq", "notifications"],
       "time": { "from": "now-1h", "to": "now" },
       "title": "Notifications Observability",
-      "version": 1
-    }
-
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: notifications-investigation-dashboard
-  namespace: monitoring
-  labels:
-    grafana_dashboard: "1"
-  annotations:
-    grafana_dashboard_folder: "Notifications Team"
-data:
-  notifications-queue-investigation.json: |
-    {
-      "annotations": { "list": [] },
-      "editable": true,
-      "fiscalYearStartMonth": 0,
-      "graphTooltip": 0,
-      "id": null,
-      "links": [],
-      "liveNow": false,
-      "panels": [
-        {
-          "id": 1,
-          "title": "Queue Message Volumes",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
-          "targets": [
-            {
-              "expr": "rabbitmq_queue_messages{vhost=\"vhost_notifications\"}",
-              "legendFormat": "{{queue}} Messages",
-              "refId": "A"
-            }
-          ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 2,
-          "title": "Consumers per Queue",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
-          "targets": [
-            {
-              "expr": "rabbitmq_queue_consumers{vhost=\"vhost_notifications\"}",
-              "legendFormat": "{{queue}} Consumers",
-              "refId": "A"
-            }
-          ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 3,
-          "title": "Queue Disk Writes and Reads",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
-          "targets": [
-            {
-              "expr": "sum(rate(rabbitmq_queue_disk_writes_total{vhost=\"vhost_notifications\"}[1m])) by (queue)",
-              "legendFormat": "{{queue}} Disk Writes",
-              "refId": "A"
-            },
-            {
-              "expr": "sum(rate(rabbitmq_queue_disk_reads_total{vhost=\"vhost_notifications\"}[1m])) by (queue)",
-              "legendFormat": "{{queue}} Disk Reads",
-              "refId": "B"
-            }
-          ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        }
-      ],
-      "refresh": "10s",
-      "schemaVersion": 39,
-      "tags": ["rabbitmq", "notifications"],
-      "time": { "from": "now-1h", "to": "now" },
-      "title": "Notifications Queue Investigation",
       "version": 1
     }
