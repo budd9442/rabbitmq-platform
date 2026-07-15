@@ -180,7 +180,7 @@ spec:
         args:
         - |
           pip install pika
-          python /app/app.py
+          python -u /app/app.py
         env:
         - name: RABBITMQ_HOST
           value: rabbitmq-prod.rabbitmq.svc.cluster.local
