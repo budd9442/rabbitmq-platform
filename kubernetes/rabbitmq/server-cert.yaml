@@ -20,13 +20,11 @@ spec:
     - server auth
     - client auth
   dnsNames:
-    - rabbitmq-prod
-    - rabbitmq-prod.rabbitmq
-    - rabbitmq-prod.rabbitmq.svc
     - rabbitmq-prod.rabbitmq.svc.cluster.local
-    - localhost
-  ipAddresses:
-    - 127.0.0.1
+    - rabbitmq-prod-nodes.rabbitmq.svc.cluster.local
+    - rabbitmq-prod-server-0.rabbitmq-prod-nodes.rabbitmq.svc.cluster.local
+    - rabbitmq-prod-server-1.rabbitmq-prod-nodes.rabbitmq.svc.cluster.local
+    - rabbitmq-prod-server-2.rabbitmq-prod-nodes.rabbitmq.svc.cluster.local
   issuerRef:
     name: vault-issuer
     kind: Issuer
