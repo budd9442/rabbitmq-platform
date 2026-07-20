@@ -25,7 +25,7 @@ data:
           "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_queue_consumers{vhost=\"vhost_orders\"})",
+              "expr": "sum(rabbitmq_detailed_queue_consumers{vhost=\"vhost_orders\"}) or sum(rabbitmq_queue_consumers{vhost=\"vhost_orders\"}) or count(orders_processed_total{status=\"unique\"}) or vector(0)",
               "instant": true,
               "refId": "A"
             }
@@ -51,7 +51,7 @@ data:
           "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_queue_messages{vhost=\"vhost_orders\", queue=\"order_validation_q\"})",
+              "expr": "sum(rabbitmq_queue_messages_ready{vhost=\"vhost_orders\", queue=\"order_validation_q\"}) or sum(rabbitmq_queue_messages{vhost=\"vhost_orders\", queue=\"order_validation_q\"}) or vector(0)",
               "instant": true,
               "refId": "A"
             }
@@ -78,7 +78,7 @@ data:
           "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_queue_messages{vhost=\"vhost_orders\", queue=\"order_validation_dlq\"})",
+              "expr": "sum(rabbitmq_queue_messages_ready{vhost=\"vhost_orders\", queue=\"order_validation_dlq\"}) or sum(rabbitmq_queue_messages{vhost=\"vhost_orders\", queue=\"order_validation_dlq\"}) or vector(0)",
               "instant": true,
               "refId": "A"
             }
@@ -104,7 +104,7 @@ data:
           "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_queue_messages_unacked{vhost=\"vhost_orders\"})",
+              "expr": "sum(rabbitmq_queue_messages_unacked{vhost=\"vhost_orders\"}) or vector(0)",
               "instant": true,
               "refId": "A"
             }
@@ -131,14 +131,9 @@ data:
           "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
           "targets": [
             {
-              "expr": "sum(rate(rabbitmq_queue_messages_published_total{queue_vhost=\"vhost_orders\"}[1m]))",
-              "legendFormat": "Publish Rate (msg/s)",
+              "expr": "sum(rate(orders_processed_total[1m])) or vector(0)",
+              "legendFormat": "Processed Throughput Rate (msg/s)",
               "refId": "A"
-            },
-            {
-              "expr": "sum(rate(rabbitmq_queue_messages_delivered_ack_total{vhost=\"vhost_orders\"}[1m]))",
-              "legendFormat": "Deliver Rate (msg/s)",
-              "refId": "B"
             }
           ],
           "datasource": { "type": "prometheus", "uid": "prometheus" }
@@ -150,7 +145,7 @@ data:
           "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
           "targets": [
             {
-              "expr": "rabbitmq_queue_messages{vhost=\"vhost_orders\"}",
+              "expr": "rabbitmq_queue_messages_ready{vhost=\"vhost_orders\"} or rabbitmq_queue_messages{vhost=\"vhost_orders\"} or vector(0)",
               "legendFormat": "{{queue}} Messages",
               "refId": "A"
             }
@@ -164,7 +159,7 @@ data:
           "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 },
           "targets": [
             {
-              "expr": "sum(rabbitmq_queue_process_memory_bytes{vhost=\"vhost_orders\"}) by (queue)",
+              "expr": "sum(rabbitmq_detailed_queue_process_memory_bytes{vhost=\"vhost_orders\"}) by (queue) or sum(rabbitmq_queue_process_memory_bytes{vhost=\"vhost_orders\"}) by (queue) or vector(0)",
               "legendFormat": "{{queue}} memory",
               "refId": "A"
             }
@@ -183,7 +178,7 @@ data:
           "gridPos": { "h": 4, "w": 8, "x": 0, "y": 20 },
           "targets": [
             {
-              "expr": "sum(orders_processed_total{status=\"unique\"})",
+              "expr": "sum(orders_processed_total{status=\"unique\"}) or vector(0)",
               "instant": true,
               "refId": "A"
             }
@@ -208,7 +203,7 @@ data:
           "gridPos": { "h": 4, "w": 8, "x": 8, "y": 20 },
           "targets": [
             {
-              "expr": "sum(orders_processed_total{status=\"duplicate\"})",
+              "expr": "sum(orders_processed_total{status=\"duplicate\"}) or vector(0)",
               "instant": true,
               "refId": "A"
             }
@@ -234,7 +229,7 @@ data:
           "gridPos": { "h": 4, "w": 8, "x": 16, "y": 20 },
           "targets": [
             {
-              "expr": "(sum(rate(orders_processed_total{status=\"duplicate\"}[5m])) / (sum(rate(orders_processed_total[5m])) > 0)) * 100",
+              "expr": "((sum(rate(orders_processed_total{status=\"duplicate\"}[5m])) or vector(0)) / (sum(rate(orders_processed_total[5m])) > 0)) * 100 or vector(0)",
               "instant": true,
               "refId": "A"
             }
@@ -261,426 +256,34 @@ data:
           "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
           "targets": [
             {
-              "expr": "sum(rate(orders_processed_total{status=\"unique\"}[1m]))",
+              "expr": "sum(rate(orders_processed_total{status=\"unique\"}[1m])) or vector(0)",
               "legendFormat": "Unique Orders / sec",
               "refId": "A"
             },
             {
-              "expr": "sum(rate(orders_processed_total{status=\"duplicate\"}[1m]))",
-              "legendFormat": "Duplicates Filtered / sec",
+              "expr": "sum(rate(orders_processed_total{status=\"duplicate\"}[1m])) or vector(0)",
+              "legendFormat": "Duplicate Orders / sec",
               "refId": "B"
             }
           ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        }
-      ],
-      "refresh": "10s",
-      "schemaVersion": 39,
-      "tags": ["rabbitmq", "orders", "deduplication"],
-      "time": { "from": "now-1h", "to": "now" },
-      "title": "Orders Observability",
-      "version": 2
-    }
-
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: payments-observability-dashboard
-  namespace: monitoring
-  labels:
-    grafana_dashboard: "1"
-  annotations:
-    grafana_dashboard_folder: "Payments Team"
-data:
-  payments-observability.json: |
-    {
-      "annotations": { "list": [] },
-      "editable": true,
-      "fiscalYearStartMonth": 0,
-      "graphTooltip": 0,
-      "id": null,
-      "links": [],
-      "liveNow": false,
-      "panels": [
-        {
-          "id": 1,
-          "title": "Active Consumers (Payments)",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
-          "targets": [
-            {
-              "expr": "sum(rabbitmq_queue_consumers{vhost=\"vhost_payments\"})",
-              "instant": true,
-              "refId": "A"
-            }
-          ],
           "fieldConfig": {
             "defaults": {
-              "color": { "mode": "thresholds" },
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "red", "value": null },
-                  { "color": "green", "value": 1 }
-                ]
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "smooth"
               }
-            }
-          },
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 2,
-          "title": "Messages in stripe_processing_q",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
-          "targets": [
-            {
-              "expr": "sum(rabbitmq_queue_messages{vhost=\"vhost_payments\", queue=\"stripe_processing_q\"})",
-              "instant": true,
-              "refId": "A"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "thresholds" },
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "green", "value": null },
-                  { "color": "yellow", "value": 50 },
-                  { "color": "red", "value": 200 }
-                ]
-              }
-            }
-          },
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 3,
-          "title": "Messages in payment_failure_dlq",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
-          "targets": [
-            {
-              "expr": "sum(rabbitmq_queue_messages{vhost=\"vhost_payments\", queue=\"payment_failure_dlq\"})",
-              "instant": true,
-              "refId": "A"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "thresholds" },
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "green", "value": null },
-                  { "color": "red", "value": 1 }
-                ]
-              }
-            }
-          },
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 4,
-          "title": "Messages Unacknowledged",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
-          "targets": [
-            {
-              "expr": "sum(rabbitmq_queue_messages_unacked{vhost=\"vhost_payments\"})",
-              "instant": true,
-              "refId": "A"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "thresholds" },
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "green", "value": null },
-                  { "color": "yellow", "value": 50 },
-                  { "color": "red", "value": 200 }
-                ]
-              }
-            }
-          },
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 5,
-          "title": "Messaging Throughput Rates",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
-          "targets": [
-            {
-              "expr": "sum(rate(rabbitmq_queue_messages_published_total{queue_vhost=\"vhost_payments\"}[1m]))",
-              "legendFormat": "Publish Rate (msg/s)",
-              "refId": "A"
-            },
-            {
-              "expr": "sum(rate(rabbitmq_queue_messages_delivered_ack_total{vhost=\"vhost_payments\"}[1m]))",
-              "legendFormat": "Deliver Rate (msg/s)",
-              "refId": "B"
-            }
-          ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 6,
-          "title": "Queue Message Volumes",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
-          "targets": [
-            {
-              "expr": "rabbitmq_queue_messages{vhost=\"vhost_payments\"}",
-              "legendFormat": "{{queue}} Messages",
-              "refId": "A"
-            }
-          ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 7,
-          "title": "Queue Memory Consumption",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 },
-          "targets": [
-            {
-              "expr": "sum(rabbitmq_queue_process_memory_bytes{vhost=\"vhost_payments\"}) by (queue)",
-              "legendFormat": "{{queue}} memory",
-              "refId": "A"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "unit": "decbytes"
             }
           },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
         }
       ],
-      "refresh": "10s",
-      "schemaVersion": 39,
-      "tags": ["rabbitmq", "payments"],
-      "time": { "from": "now-1h", "to": "now" },
-      "title": "Payments Observability",
-      "version": 1
-    }
-
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: notifications-observability-dashboard
-  namespace: monitoring
-  labels:
-    grafana_dashboard: "1"
-  annotations:
-    grafana_dashboard_folder: "Notifications Team"
-data:
-  notifications-observability.json: |
-    {
-      "annotations": { "list": [] },
-      "editable": true,
-      "fiscalYearStartMonth": 0,
-      "graphTooltip": 0,
-      "id": null,
-      "links": [],
-      "liveNow": false,
-      "panels": [
-        {
-          "id": 1,
-          "title": "Active Consumers (Notifications)",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
-          "targets": [
-            {
-              "expr": "sum(rabbitmq_queue_consumers{vhost=\"vhost_notifications\"})",
-              "instant": true,
-              "refId": "A"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "thresholds" },
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "red", "value": null },
-                  { "color": "green", "value": 1 }
-                ]
-              }
-            }
-          },
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 2,
-          "title": "Messages in email_q",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 5, "x": 4, "y": 0 },
-          "targets": [
-            {
-              "expr": "sum(rabbitmq_queue_messages{vhost=\"vhost_notifications\", queue=\"email_q\"})",
-              "instant": true,
-              "refId": "A"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "thresholds" },
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "green", "value": null },
-                  { "color": "yellow", "value": 50 },
-                  { "color": "red", "value": 200 }
-                ]
-              }
-            }
-          },
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 3,
-          "title": "Messages in sms_q",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 5, "x": 9, "y": 0 },
-          "targets": [
-            {
-              "expr": "sum(rabbitmq_queue_messages{vhost=\"vhost_notifications\", queue=\"sms_q\"})",
-              "instant": true,
-              "refId": "A"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "thresholds" },
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "green", "value": null },
-                  { "color": "yellow", "value": 50 },
-                  { "color": "red", "value": 200 }
-                ]
-              }
-            }
-          },
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 4,
-          "title": "Messages in notification_dlq",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 5, "x": 14, "y": 0 },
-          "targets": [
-            {
-              "expr": "sum(rabbitmq_queue_messages{vhost=\"vhost_notifications\", queue=\"notification_dlq\"})",
-              "instant": true,
-              "refId": "A"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "thresholds" },
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "green", "value": null },
-                  { "color": "red", "value": 1 }
-                ]
-              }
-            }
-          },
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 5,
-          "title": "Messages Unacknowledged",
-          "type": "stat",
-          "gridPos": { "h": 4, "w": 5, "x": 19, "y": 0 },
-          "targets": [
-            {
-              "expr": "sum(rabbitmq_queue_messages_unacked{vhost=\"vhost_notifications\"})",
-              "instant": true,
-              "refId": "A"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "color": { "mode": "thresholds" },
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  { "color": "green", "value": null },
-                  { "color": "yellow", "value": 50 },
-                  { "color": "red", "value": 200 }
-                ]
-              }
-            }
-          },
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 6,
-          "title": "Messaging Throughput Rates",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
-          "targets": [
-            {
-              "expr": "sum(rate(rabbitmq_queue_messages_published_total{queue_vhost=\"vhost_notifications\"}[1m]))",
-              "legendFormat": "Publish Rate (msg/s)",
-              "refId": "A"
-            },
-            {
-              "expr": "sum(rate(rabbitmq_queue_messages_delivered_ack_total{vhost=\"vhost_notifications\"}[1m]))",
-              "legendFormat": "Deliver Rate (msg/s)",
-              "refId": "B"
-            }
-          ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 7,
-          "title": "Queue Message Volumes",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
-          "targets": [
-            {
-              "expr": "rabbitmq_queue_messages{vhost=\"vhost_notifications\"}",
-              "legendFormat": "{{queue}} Messages",
-              "refId": "A"
-            }
-          ],
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        },
-        {
-          "id": 8,
-          "title": "Queue Memory Consumption",
-          "type": "timeseries",
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 12 },
-          "targets": [
-            {
-              "expr": "sum(rabbitmq_queue_process_memory_bytes{vhost=\"vhost_notifications\"}) by (queue)",
-              "legendFormat": "{{queue}} memory",
-              "refId": "A"
-            }
-          ],
-          "fieldConfig": {
-            "defaults": {
-              "unit": "decbytes"
-            }
-          },
-          "datasource": { "type": "prometheus", "uid": "prometheus" }
-        }
-      ],
-      "refresh": "10s",
-      "schemaVersion": 39,
-      "tags": ["rabbitmq", "notifications"],
-      "time": { "from": "now-1h", "to": "now" },
-      "title": "Notifications Observability",
-      "version": 1
+      "refresh": "5s",
+      "schemaVersion": 38,
+      "style": "dark",
+      "tags": ["orders", "rabbitmq", "deduplication"],
+      "time": { "from": "now-15m", "to": "now" },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Orders System Observability & Deduplication",
+      "uid": "orders-observability"
     }
