@@ -175,14 +175,111 @@ data:
             }
           },
           "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 8,
+          "title": "Unique Orders Processed",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 0, "y": 20 },
+          "targets": [
+            {
+              "expr": "sum(orders_processed_total{status=\"unique\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null }
+                ]
+              }
+            }
+          },
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 9,
+          "title": "Duplicate Orders Filtered",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 8, "y": 20 },
+          "targets": [
+            {
+              "expr": "sum(orders_processed_total{status=\"duplicate\"})",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "yellow", "value": null },
+                  { "color": "blue", "value": 10 }
+                ]
+              }
+            }
+          },
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 10,
+          "title": "Deduplication Rate (%)",
+          "type": "stat",
+          "gridPos": { "h": 4, "w": 8, "x": 16, "y": 20 },
+          "targets": [
+            {
+              "expr": "(sum(rate(orders_processed_total{status=\"duplicate\"}[5m])) / (sum(rate(orders_processed_total[5m])) > 0)) * 100",
+              "instant": true,
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "color": { "mode": "thresholds" },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "orange", "value": 25 }
+                ]
+              }
+            }
+          },
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
+        },
+        {
+          "id": 11,
+          "title": "Order Deduplication Throughput (Unique vs Duplicate)",
+          "type": "timeseries",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
+          "targets": [
+            {
+              "expr": "sum(rate(orders_processed_total{status=\"unique\"}[1m]))",
+              "legendFormat": "Unique Orders / sec",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(rate(orders_processed_total{status=\"duplicate\"}[1m]))",
+              "legendFormat": "Duplicates Filtered / sec",
+              "refId": "B"
+            }
+          ],
+          "datasource": { "type": "prometheus", "uid": "prometheus" }
         }
       ],
       "refresh": "10s",
       "schemaVersion": 39,
-      "tags": ["rabbitmq", "orders"],
+      "tags": ["rabbitmq", "orders", "deduplication"],
       "time": { "from": "now-1h", "to": "now" },
       "title": "Orders Observability",
-      "version": 1
+      "version": 2
     }
 
 ---
