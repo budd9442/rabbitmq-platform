@@ -24,15 +24,15 @@ spec:
       prometheus.return_per_object_metrics = true
       ssl_cert_login_from = common_name
       auth_mechanisms.1 = EXTERNAL
+      auth_mechanisms.2 = PLAIN
+      auth_mechanisms.3 = AMQPPLAIN
     additionalPlugins:
       - rabbitmq_shovel
       - rabbitmq_shovel_management
       - rabbitmq_auth_mechanism_ssl
   tls:
-    secretRef:
-      name: rabbitmq-prod-server-cert
-    caSecretRef:
-      name: rabbitmq-prod-server-cert
+    secretName: rabbitmq-prod-server-cert
+    caSecretName: rabbitmq-prod-server-cert
 
 ---
 apiVersion: policy/v1
